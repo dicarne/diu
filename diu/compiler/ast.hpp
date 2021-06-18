@@ -8,6 +8,7 @@
 #include <memory>
 #include "token.hpp"
 #include "ast_node.hpp"
+#include <vector>
 
 using std::deque;
 using std::make_shared;
@@ -15,6 +16,7 @@ using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::unordered_set;
+using std::vector;
 
 class UsePackageInfo
 {
@@ -189,6 +191,8 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                 {
                     token_base::dump_tokens("[before build node ast]", tokens);
                     auto node = build_node_ast(get_tokens_in_next(op_type::llb_, op_type::lrb_, it, tokens));
+                    nodes[nodename] = node;
+                    continue;
                 }
                 else
                 {
@@ -329,6 +333,7 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
                     stat.statemen_type = ast_statement::type::assign;
                     stat.assign = let_assign;
                     fun.atatements.push_back(stat);
+                    continue;
                 }
             }
             else
@@ -339,8 +344,19 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
         }
         if ((*fi)->get_type() == token_types::name)
         {
-            auto unk_name = static_cast<token_name *>(*fi)->name;
-            fi++;
+            auto start = fi;
+            vector<string> name_chain;
+            while ((*fi)->get_type() != token_types::op)
+            {
+                auto unk_name = static_cast<token_name *>(*fi)->name;
+                name_chain.push_back(unk_name);
+                fi++;
+                if ((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::dot_)
+                {
+                    fi++;
+                }
+            }
+
             if ((*fi)->get_type() == token_types::op)
             {
                 auto nop = static_cast<token_op *>(*fi);
@@ -353,18 +369,21 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
                     // handle remain statement
                     let_assign.expr = get_next_expr(fi, func_body_tokens);
                     stat.statemen_type = ast_statement::type::assign;
+                    let_assign.object_chain = name_chain;
                     stat.assign = let_assign;
                     fun.atatements.push_back(stat);
+                    continue;
                 }
                 else if (nop->type == op_type::slb_)
                 {
                     // A(... func call
-                    fi--;
+                    fi = start;
                     ast_statement stat;
                     auto expr = get_next_expr(fi, func_body_tokens);
-                    stat.statemen_type = ast_statement::type::assign;
+                    stat.statemen_type = ast_statement::type::expr;
                     stat.expr = expr;
                     fun.atatements.push_back(stat);
+                    continue;
                 }
                 else
                 {
@@ -376,6 +395,8 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
                 throw compile_error("what follow name??");
             }
         }
+        std::cout << (*fi)->dump() << std::endl;
+        fi++;
     }
 
     return fun;
@@ -470,6 +491,17 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
             break;
         }
 
+        if (expr->caller.size() == 1)
+        {
+            auto t = (*it)->get_type();
+            auto s = static_cast<token_op *>(*it)->type;
+            if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::slb_)
+            {
+                expr->expr_type = ast_expr::type::func_call;
+                it--;
+            }
+        }
+
         // handle func call
         if (expr->expr_type == ast_expr::type::func_call)
         {
@@ -520,6 +552,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
         auto ii = inLb.begin();
         return get_next_expr(ii, inLb);
     }
+
     throw compile_error("can not get next expr");
     return expr;
 }

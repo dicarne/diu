@@ -185,7 +185,7 @@ const unordered_map<std::string, keyword_type> compiler_type::keyword_map = {
     {"node", keyword_type::node_},
     {"let", keyword_type::let_},
     {"static", keyword_type::static_},
-    {"new", keyword_type::new_},
+    //{"new", keyword_type::new_},
     {"await", keyword_type::await_}};
 
 class compile_error final : public std::exception

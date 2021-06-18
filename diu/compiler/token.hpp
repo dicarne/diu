@@ -77,7 +77,7 @@ public:
     ~token_keyword() {}
     virtual string what() { return "keyword"; }
     virtual token_types get_type() { return token_types::keyword; }
-    virtual string dump() { return "K"; }
+    virtual string dump() { return "[K]"; }
 };
 
 class token_op : public token_base
@@ -103,7 +103,7 @@ public:
         default:
             break;
         }
-        return "O";
+        return "[O]";
     }
 };
 

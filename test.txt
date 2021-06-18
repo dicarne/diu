@@ -1,5 +1,7 @@
 node Main{
     fn main() {
         let a = 1 + (2 * 3) - value + v2:c(1,2) * v3.a:c(1,2)
+        a.b.c = 100
+        A(1, 2, "2")
     }
 }

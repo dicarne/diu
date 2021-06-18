@@ -3,7 +3,10 @@
 #include "compiler_type.hpp"
 #include "ast_expr.hpp"
 #include <string>
+#include <vector>
 using std::string;
+using std::vector;
+
 class ast_assign
 {
 private:
@@ -11,6 +14,7 @@ private:
 public:
     bool newsymbol;
     string name;
+    vector<string> object_chain;
     op_type assign_type;
     shared_ptr<ast_expr> expr;
     ast_assign(/* args */);
