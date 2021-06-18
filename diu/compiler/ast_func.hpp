@@ -20,7 +20,7 @@ public:
         assign, expr
     };
     type statemen_type;
-    ast_expr expr;
+    shared_ptr<ast_expr> expr;
     ast_assign assign;
 };
 

@@ -1,18 +1,5 @@
-use io
-from io use { print }
-from "./module" use { Lib1 }
 node Main{
-    static fn main() {
-        let lib = new Lib1()
-        let str = "HELLO\nWORLD"
-        lib.hello(str, ", WULA")
-        wait(100)
-
-        // 在此等待，运行结束后再运行接下来的代码
-        await lib.hello()
-    }
-    static fn hello(text: str, str2: str) {
-        io:print(text)
-        print(text)
+    fn main() {
+        let a = 1 + (2 * 3) - value + v2:c(1,2) * v3.a:c(1,2)
     }
 }

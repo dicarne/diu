@@ -12,7 +12,7 @@ public:
     bool newsymbol;
     string name;
     op_type assign_type;
-    ast_expr expor;
+    shared_ptr<ast_expr> expr;
     ast_assign(/* args */);
     ~ast_assign();
 };

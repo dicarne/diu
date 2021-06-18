@@ -267,7 +267,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             }
             else
             {
-                if (*it == '.' || *it == ',')
+                if (*it == '.')
                 {
                     tmp += *it;
                     it++;
@@ -287,12 +287,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             }
         }
         // end make number token
-        // make end file
-        if (*it == -1)
-        {
-            break;
-        }
-        // end file
+        
         // make op token
         if (type == token_types::none && compiler_type::issignal(*it))
         {
@@ -412,6 +407,12 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             }
         }
         // end make name token
+        // make end file
+        if (*it == -1)
+        {
+            break;
+        }
+        // end file
         if (!compiler_type::isempty(*it))
         {
             DEBUG_ERROR(*it);

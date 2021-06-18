@@ -12,7 +12,6 @@ private:
     /* data */
 public:
     unordered_map<string, ast_func> funcs;
-    unordered_map<string, ast_func> static_funcs;
     ast_node(/* args */);
     ~ast_node();
 };

@@ -78,7 +78,7 @@ public:
     static const unordered_set<char32_t> signals;
     static const unordered_map<std::string, op_type> op_map;
     static const unordered_map<std::string, keyword_type> keyword_map;
-
+    static const unordered_map<op_type, int> PRECEDENCE;
     static bool
     issignal(char32_t ch)
     {
@@ -114,6 +114,23 @@ compiler_type::~compiler_type()
 const unordered_set<char32_t> compiler_type::signals = {
     '+', '-', '*', '/', '%', '^', ',', '.', '>', '<', '=', '&', '|', '!', '(', ')', '[', ']', '{', '}', ':',
     '?', ';'};
+
+const unordered_map<op_type, int> compiler_type::PRECEDENCE = {
+    {op_type::asi_, 1},
+    {op_type::or_, 2},
+    {op_type::and_, 3},
+    {op_type::lt_, 7},
+    {op_type::gt_, 7},
+    {op_type::le_, 7},
+    {op_type::ge_, 7},
+    {op_type::equ_, 7},
+    {op_type::neq_, 7},
+    {op_type::add_, 10},
+    {op_type::sub_, 10},
+    {op_type::mul_, 20},
+    {op_type::div_, 20},
+    {op_type::mod_, 20},
+};
 
 const unordered_map<std::string, op_type> compiler_type::op_map = {
     {"+", op_type::add_},
