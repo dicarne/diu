@@ -17,7 +17,7 @@ public:
 class ast_statement {
 public:
     enum class type {
-        assign, expr
+        assign, expr, ret
     };
     type statemen_type;
     shared_ptr<ast_expr> expr;

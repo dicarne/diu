@@ -69,6 +69,7 @@ enum class keyword_type
     static_,
     new_,
     await_,
+    return_
 };
 
 class compiler_type
@@ -187,7 +188,8 @@ const unordered_map<std::string, keyword_type> compiler_type::keyword_map = {
     {"let", keyword_type::let_},
     {"static", keyword_type::static_},
     //{"new", keyword_type::new_},
-    {"await", keyword_type::await_}};
+    {"await", keyword_type::await_},
+    {"return", keyword_type::return_}};
 
 class compile_error final : public std::exception
 {

@@ -4,7 +4,6 @@
 #include <unordered_map>
 #include <memory>
 #include "RemoteEngine.hpp"
-#include "Type.hpp"
 #include "Node.hpp"
 #include "../conf.h"
 
@@ -15,7 +14,6 @@ class Engine
 {
 private:
     unordered_map<int, RemoteEngine> engines;
-    TypeManager types;
     int version;
     unordered_map<int64, shared_ptr<Node>> nodes;
     int64 node_index = 0;

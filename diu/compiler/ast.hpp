@@ -156,6 +156,7 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                     auto old_pkg = packages.find(pkg_name);
                     if (old_pkg == packages.end())
                     {
+                        pkg.use_namespace = true;
                         packages[pkg_name] = pkg;
                     }
                     else
@@ -191,6 +192,7 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                 {
                     token_base::dump_tokens("[before build node ast]", tokens);
                     auto node = build_node_ast(get_tokens_in_next(op_type::llb_, op_type::lrb_, it, tokens));
+                    node.node_name = nodename;
                     nodes[nodename] = node;
                     continue;
                 }
@@ -337,6 +339,16 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
                     continue;
                 }
             }
+            else if (token->type == keyword_type::return_)
+            {
+                // return statement
+                ast_statement stat;
+                stat.statemen_type = ast_statement::type::ret;
+                fi++;
+                stat.expr = get_next_expr(fi, func_body_tokens);
+                fun.atatements.push_back(stat);
+                continue;
+            }
             else
             {
                 // Another keywords
@@ -375,7 +387,7 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
                     fun.atatements.push_back(stat);
                     continue;
                 }
-                else if (nop->type == op_type::slb_)
+                else if (nop->type == op_type::slb_ || nop->type == op_type::pair_)
                 {
                     // A(... func call
                     fi = start;

@@ -6,6 +6,7 @@
 #include <deque>
 #include <fstream>
 #include "compiler/ast.hpp"
+#include "compiler/ast_runner.hpp"
 
 int main(int, char **)
 {
@@ -22,7 +23,9 @@ int main(int, char **)
     std::deque<token_base *> tokens;
     lexer lex;
     lex.process_char_buff(buffer_q, tokens, charset::utf8);
-    AST ast;
-    ast.build_ast_from_tokens(tokens);
+    shared_ptr<AST> ast = make_shared<AST>();
+    ast->build_ast_from_tokens(tokens);
+    ast_runner runner(ast);
+    runner.run();
     return 0;
 }
