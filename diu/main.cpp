@@ -22,6 +22,7 @@ int main(int, char **)
     std::deque<token_base *> tokens;
     lexer lex;
     lex.process_char_buff(buffer_q, tokens, charset::utf8);
-    
+    AST ast;
+    ast.build_ast(tokens);
     return 0;
 }

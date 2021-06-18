@@ -163,7 +163,7 @@ const unordered_map<std::string, op_type> compiler_type::op_map = {
 
 const unordered_map<std::string, keyword_type> compiler_type::keyword_map = {
     {"from", keyword_type::from_},
-    {"use", keyword_type::from_},
+    {"use", keyword_type::use_pkg_},
     {"fn", keyword_type::fn_},
     {"node", keyword_type::node_},
     {"let", keyword_type::let_},
