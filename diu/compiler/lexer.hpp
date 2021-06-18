@@ -10,16 +10,7 @@
 #include "token.hpp"
 #include "debug.hpp"
 
-enum lexer_t
-{
-    none,
-    error,
-    number,
-    op,
-    identifier,
-    string_l,
-    comment,
-};
+
 
 enum class charset
 {
@@ -210,7 +201,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
     std::u32string buff = cvt->local2wide(raw_buff);
     buff.push_back(-1);
     std::u32string tmp;
-    lexer_t type = lexer_t::none;
+    token_types type = token_types::none;
     auto insideStr = false;
     auto escape = false;
     for (auto it = buff.begin(); it != buff.end();)
@@ -237,11 +228,12 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                 else
                 {
                     insideStr = false;
-                    // TODO: ADD NEW ITER TOKEN
+                    // REVIEW: ADD NEW ITER TOKEN
                     DEBUG_LOG2("STRING\t\t", tmp);
+                    tokens.push_back(new token_string(cvt->wide2local(tmp)));
                     tmp.clear();
                     it++;
-                    type = lexer_t::none;
+                    type = token_types::none;
                     continue;
                 }
             }
@@ -254,20 +246,20 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
         {
             insideStr = true;
             it++;
-            type = lexer_t::string_l;
+            type = token_types::string_l;
             continue;
         }
         // end make string token
 
         // make number token
-        if (type == lexer_t::none && compiler_type::isnumber(*it))
+        if (type == token_types::none && compiler_type::isnumber(*it))
         {
-            type = lexer_t::number;
+            type = token_types::number;
             tmp += *it;
             it++;
             continue;
         }
-        if (type == lexer_t::number)
+        if (type == token_types::number)
         {
             if (compiler_type::isnumber(*it))
             {
@@ -285,10 +277,12 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                 }
                 else
                 {
-                    // TODO: MAKE NUMBER TOKEN
+                    // REVIEW: MAKE NUMBER TOKEN
                     DEBUG_LOG2("NUMBER\t\t", tmp);
+                    tokens.push_back(new token_number(cvt->wide2local(tmp)));
+
                     tmp.clear();
-                    type = lexer_t::none;
+                    type = token_types::none;
                     // dont increase {it}
                     continue;
                 }
@@ -302,14 +296,14 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
         }
         // end file
         // make op token
-        if (type == lexer_t::none && compiler_type::issignal(*it))
+        if (type == token_types::none && compiler_type::issignal(*it))
         {
-            type = lexer_t::op;
+            type = token_types::op;
             tmp += *it;
             it++;
             continue;
         }
-        if (type == lexer_t::op)
+        if (type == token_types::op)
         {
             if (compiler_type::issignal(*it))
             {
@@ -319,16 +313,25 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             }
             else
             {
-                type = lexer_t::none;
+                type = token_types::none;
 
                 if (cvt->wide2local(tmp) == "//")
                 {
-                    type = lexer_t::comment;
+                    type = token_types::comment;
                 }
                 else
                 {
-                    // TODO: MAKE SIGNAL TOKEN
+                    // REVIEW: MAKE SIGNAL TOKEN
                     DEBUG_LOG2("OP\t\t", tmp);
+                    auto find_op = compiler_type::op_map.find(cvt->wide2local(tmp));
+                    if (find_op != compiler_type::op_map.end())
+                    {
+                        tokens.push_back(new token_op(find_op->second));
+                    }
+                    else
+                    {
+                        throw compile_error("UNKNOWN OP " + cvt->wide2local(tmp));
+                    }
                 }
                 tmp.clear();
                 continue;
@@ -337,11 +340,11 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
         // end make op token
 
         // make comment token
-        if (type == lexer_t::comment)
+        if (type == token_types::comment)
         {
             if (*it == '\n' || *it == -1)
             {
-                type = lexer_t::none;
+                type = token_types::none;
                 DEBUG_LOG2("COMMENT\t\t", tmp);
                 tmp.clear();
                 continue;
@@ -356,14 +359,14 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
         // end make comment token
 
         // make name token
-        if (type == lexer_t::none && !compiler_type::isempty(*it))
+        if (type == token_types::none && !compiler_type::isempty(*it))
         {
-            type = lexer_t::identifier;
+            type = token_types::identifier;
             tmp += *it;
             it++;
             continue;
         }
-        if (type == lexer_t::identifier)
+        if (type == token_types::identifier)
         {
             if (!compiler_type::isempty(*it) && !compiler_type::issignal(*it))
             {
@@ -373,9 +376,21 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             }
             else
             {
-                type = lexer_t::none;
-                // TODO: MAKE NAME TOKEN
+                type = token_types::none;
+                // REVIEW: MAKE NAME TOKEN
                 DEBUG_LOG2("NAME\t\t", tmp);
+                auto name_str = cvt->wide2local(tmp);
+                auto find_keyword = compiler_type::keyword_map.find(name_str);
+                if (find_keyword != compiler_type::keyword_map.end())
+                {
+                    // this is keyword
+                    tokens.push_back(new token_keyword(find_keyword->second));
+                }
+                else
+                {
+                    // this is name
+                    tokens.push_back(new token_name(cvt->wide2local(tmp)));
+                }
                 tmp.clear();
                 // dont increase {it}
                 continue;

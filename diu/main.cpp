@@ -5,6 +5,7 @@
 #include "compiler/lexer.hpp"
 #include <deque>
 #include <fstream>
+#include "compiler/ast.hpp"
 
 int main(int, char **)
 {
@@ -21,5 +22,6 @@ int main(int, char **)
     std::deque<token_base *> tokens;
     lexer lex;
     lex.process_char_buff(buffer_q, tokens, charset::utf8);
+    
     return 0;
 }
