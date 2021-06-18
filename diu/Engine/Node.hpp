@@ -31,6 +31,7 @@ public:
 
 Node::Node(PID pid) : Pid(pid)
 {
+    
 }
 
 Node::~Node()

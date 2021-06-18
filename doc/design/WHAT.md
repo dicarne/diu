@@ -16,9 +16,9 @@
 
 `main.diu`
 ```
-use io;
-from io use { print };
-from "./module" use { Lib1 };
+use io
+from io use { print }
+from "./module" use { Lib1 }
 node Main{
     static fn main() {
         let lib = new Lib1()

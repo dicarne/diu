@@ -10,17 +10,17 @@ using std::string;
 using std::variant;
 using std::unordered_map;
 using std::vector;
-
+typedef unsigned long long int64;
 class PID
 {
 private:
     /* data */
 public:
     int engine;
-    int pid;
+    int64 pid;
     int server;
     PID() : engine(-1), pid(-1) {}
-    PID(int engine, int pid) : engine(engine), pid(pid)
+    PID(int engine, int64 pid) : engine(engine), pid(pid)
     {
     }
 };
