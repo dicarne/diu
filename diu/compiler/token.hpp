@@ -12,7 +12,8 @@ class token_base
 private:
     /* data */
 public:
-    token_base(/* args */) {}
+    int line_num;
+    token_base(int line) : line_num(line) {}
     ~token_base() {}
     virtual string what() { return "base token"; }
     virtual token_types get_type() { return token_types::none; }
@@ -34,7 +35,7 @@ private:
     /* data */
 public:
     string content;
-    token_string(string content) : content(content) {}
+    token_string(string content, int line) : content(content), token_base(line) {}
     ~token_string() {}
     virtual string what() { return content; }
     virtual token_types get_type() { return token_types::string_l; }
@@ -47,7 +48,7 @@ private:
     /* data */
 public:
     string content;
-    token_number(string content) : content(content) {}
+    token_number(string content, int line) : content(content), token_base(line) {}
     ~token_number() {}
     virtual string what() { return content; }
     virtual token_types get_type() { return token_types::number; }
@@ -60,7 +61,7 @@ private:
     /* data */
 public:
     string name;
-    token_name(string name) : name(name) {}
+    token_name(string name, int line) : name(name), token_base(line) {}
     ~token_name() {}
     virtual string what() { return name; }
     virtual token_types get_type() { return token_types::name; }
@@ -73,7 +74,7 @@ private:
     /* data */
 public:
     keyword_type type;
-    token_keyword(keyword_type type) : type(type) {}
+    token_keyword(keyword_type type, int line) : type(type), token_base(line) {}
     ~token_keyword() {}
     virtual string what() { return "keyword"; }
     virtual token_types get_type() { return token_types::keyword; }
@@ -86,7 +87,7 @@ private:
     /* data */
 public:
     op_type type;
-    token_op(op_type type) : type(type) {}
+    token_op(op_type type, int line) : type(type), token_base(line) {}
     ~token_op() {}
     virtual string what() { return "op"; }
     virtual token_types get_type() { return token_types::op; }

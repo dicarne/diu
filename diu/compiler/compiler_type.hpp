@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <exception>
+#include <sstream>
 using std::unordered_map;
 using std::unordered_set;
 enum token_types
@@ -191,12 +192,20 @@ const unordered_map<std::string, keyword_type> compiler_type::keyword_map = {
 class compile_error final : public std::exception
 {
     string mWhat = "Compile Error";
+    int line;
+    string str;
 
 public:
-    compile_error(string message) : mWhat(message) {}
+    compile_error(string message, int line) : mWhat(message), line(line)
+    {
+        std::stringstream ss;
+        ss << "line " << line << ": " << mWhat;
+        str = ss.str();
+    }
     const char *what() const noexcept override
     {
-        return this->mWhat.c_str();
+
+        return str.c_str();
     }
 };
 

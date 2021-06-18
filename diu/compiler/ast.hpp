@@ -79,7 +79,7 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                     }
                     else
                     {
-                        throw compile_error("[use] should follow [from pkgname]");
+                        throw compile_error("[use] should follow [from pkgname]", (*it)->line_num);
                     }
                     bool multi_import_symbol = false;
                     // handle [{]
@@ -97,7 +97,7 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                         }
                         else
                         {
-                            throw compile_error("import symbol name should follow [use]");
+                            throw compile_error("import symbol name should follow [use]", (*it)->line_num);
                         }
                     }
                     else
@@ -109,7 +109,7 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                         }
                         if (!((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::lrb_))
                         {
-                            throw compile_error("[}] should at the end of [from ... use {...}] statement");
+                            throw compile_error("[}] should at the end of [from ... use {...}] statement", (*it)->line_num);
                         }
                         goto Complete_Import;
                     }
@@ -139,7 +139,7 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                 }
                 else
                 {
-                    throw compile_error("A pkgname should follow [from].");
+                    throw compile_error("A pkgname should follow [from].", (*it)->line_num);
                 }
             }
             // end handle [from]
@@ -168,7 +168,7 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                 }
                 else
                 {
-                    throw compile_error("pkgname should follow use");
+                    throw compile_error("pkgname should follow use", (*it)->line_num);
                 }
             }
             // end handle [use]
@@ -185,7 +185,7 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                 }
                 else
                 {
-                    throw compile_error("a name should follod [node]");
+                    throw compile_error("a name should follod [node]", (*it)->line_num);
                 }
                 if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::llb_)
                 {
@@ -196,11 +196,12 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                 }
                 else
                 {
-                    throw compile_error("[{] should follow [node name]");
+                    throw compile_error("[{] should follow [node name]", (*it)->line_num);
                 }
             }
             // end handle [node]
         }
+        throw compile_error("not allowed token", (*it)->line_num);
         it++;
     }
 }
@@ -233,7 +234,7 @@ ast_node AST::build_node_ast(deque<token_base *> tokens)
             else
             {
                 //
-                throw compile_error("[fn] should follow [static]");
+                throw compile_error("[fn] should follow [static]", (*it)->line_num);
             }
         }
         it++;
@@ -248,7 +249,7 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
     ast_func fun;
     if ((*it)->get_type() != token_types::name)
     {
-        throw compile_error("a funcname should follow [fn]");
+        throw compile_error("a funcname should follow [fn]", (*it)->line_num);
     }
     fun.name = static_cast<token_name *>(*it)->name;
     it++;
@@ -266,7 +267,7 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
             }
             else
             {
-                throw compile_error("arg name should appear in func def");
+                throw compile_error("arg name should appear in func def", (*it)->line_num);
             }
             if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::pair_)
             {
@@ -274,7 +275,7 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
             }
             else
             {
-                throw compile_error("[:] should appear in func def");
+                throw compile_error("[:] should appear in func def", (*it)->line_num);
             }
             if ((*it)->get_type() == token_types::name)
             {
@@ -283,7 +284,7 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
             }
             else
             {
-                throw compile_error("arg type should appear in func def");
+                throw compile_error("arg type should appear in func def", (*it)->line_num);
             }
             fun.args.push_back(arg);
             if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::com_)
@@ -296,14 +297,14 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
                 {
                     break;
                 }
-                throw compile_error("[,] should appear in func def");
+                throw compile_error("[,] should appear in func def", (*it)->line_num);
             }
         }
         it++;
     }
     else
     {
-        throw compile_error("[(] should follow func def");
+        throw compile_error("[(] should follow func def", (*it)->line_num);
     }
     // body
     auto func_body_tokens = get_tokens_in_next(op_type::llb_, op_type::lrb_, it, tokens);
@@ -325,7 +326,7 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
                     fi++; // eat =
                     if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::asi_))
                     {
-                        throw compile_error("= should follow [let]");
+                        throw compile_error("= should follow [let]", (*it)->line_num);
                     }
                     fi++;
                     // handle remain statement
@@ -387,12 +388,12 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
                 }
                 else
                 {
-                    throw compile_error("unknown op after name");
+                    throw compile_error("unknown op after name", (*fi)->line_num);
                 }
             }
             else
             {
-                throw compile_error("what follow name??");
+                throw compile_error("what follow name??", (*fi)->line_num);
             }
         }
         std::cout << (*fi)->dump() << std::endl;
@@ -427,14 +428,12 @@ deque<token_base *> AST::get_tokens_in_next(op_type lft, op_type rgt, std::deque
         else
         {
             in_node_token.push_back(*it);
-            std::cout << (*it)->dump() << " ";
             it++;
         }
     }
-    std::cout << std::endl;
     if (llb_count > 0)
     {
-        throw compile_error("no enough [}] after [{]");
+        throw compile_error("no enough [}] after [{]", (*it)->line_num);
     }
     //in_node_token.pop_back();
     return in_node_token;
@@ -445,6 +444,11 @@ deque<token_base *> AST::get_tokens_in_next(op_type lft, op_type rgt, std::deque
 // a +(f(c,d)+n.f1(c,d))*2
 shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, deque<token_base *> &tokens)
 {
+    if (it == tokens.end())
+    {
+        it--;
+        throw compile_error("expr should be complete", (*it)->line_num);
+    }
     auto expr = make_shared<ast_expr>();
     if ((*it)->get_type() == token_types::name)
     {
@@ -469,7 +473,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
                     }
                     else
                     {
-                        throw compile_error("a name should follow [.]");
+                        throw compile_error("a name should follow [.]", (*it)->line_num);
                     }
                 }
                 if (sit->type == op_type::pair_)
@@ -483,7 +487,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
                     }
                     else
                     {
-                        throw compile_error("a name should follow [:]");
+                        throw compile_error("a name should follow [:]", (*it)->line_num);
                     }
                 }
                 break;
@@ -526,7 +530,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
             }
             else
             {
-                throw compile_error("[(] should follow a func call");
+                throw compile_error("[(] should follow a func call", (*it)->line_num);
             }
         }
 
@@ -553,7 +557,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
         return get_next_expr(ii, inLb);
     }
 
-    throw compile_error("can not get next expr");
+    throw compile_error("can not get next expr", (*it)->line_num);
     return expr;
 }
 

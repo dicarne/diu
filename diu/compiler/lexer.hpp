@@ -181,6 +181,7 @@ lexer::~lexer()
 
 void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token_base *> &tokens, charset encoding)
 {
+    int line_num = 1;
     if (raw_buff.empty())
         throw; // compile_error("Received empty character buffer.");
     std::unique_ptr<codecvt::charset> cvt = nullptr;
@@ -202,8 +203,20 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
     token_types type = token_types::none;
     auto insideStr = false;
     auto escape = false;
+    unordered_map<std::ptrdiff_t, int> nextlines;
     for (auto it = buff.begin(); it != buff.end();)
     {
+        if (*it == '\n')
+        {
+            auto l = it - buff.begin();
+            auto f_l = nextlines.find(l);
+            if (f_l == nextlines.end())
+            {
+                nextlines[l] = line_num;
+                line_num++;
+                DEBUG_ERROR(line_num);
+            }
+        }
         // make string token
         if (insideStr)
         {
@@ -228,7 +241,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                     insideStr = false;
                     // REVIEW: ADD NEW ITER TOKEN
                     DEBUG_LOG2("STRING\t\t", tmp);
-                    tokens.push_back(new token_string(cvt->wide2local(tmp)));
+                    tokens.push_back(new token_string(cvt->wide2local(tmp), line_num));
                     tmp.clear();
                     it++;
                     type = token_types::none;
@@ -277,7 +290,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                 {
                     // REVIEW: MAKE NUMBER TOKEN
                     DEBUG_LOG2("NUMBER\t\t", tmp);
-                    tokens.push_back(new token_number(cvt->wide2local(tmp)));
+                    tokens.push_back(new token_number(cvt->wide2local(tmp), line_num));
 
                     tmp.clear();
                     type = token_types::none;
@@ -287,7 +300,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             }
         }
         // end make number token
-        
+
         // make op token
         if (type == token_types::none && compiler_type::issignal(*it))
         {
@@ -322,25 +335,25 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                         switch (find_op->second)
                         {
                         case op_type::esb_:
-                            tokens.push_back(new token_op(op_type::slb_));
-                            tokens.push_back(new token_op(op_type::srb_));
+                            tokens.push_back(new token_op(op_type::slb_, line_num));
+                            tokens.push_back(new token_op(op_type::srb_, line_num));
                             break;
                         case op_type::emb_:
-                            tokens.push_back(new token_op(op_type::mlb_));
-                            tokens.push_back(new token_op(op_type::mrb_));
+                            tokens.push_back(new token_op(op_type::mlb_, line_num));
+                            tokens.push_back(new token_op(op_type::mrb_, line_num));
                             break;
                         case op_type::elb_:
-                            tokens.push_back(new token_op(op_type::llb_));
-                            tokens.push_back(new token_op(op_type::lrb_));
+                            tokens.push_back(new token_op(op_type::llb_, line_num));
+                            tokens.push_back(new token_op(op_type::lrb_, line_num));
                             break;
                         default:
-                            tokens.push_back(new token_op(find_op->second));
+                            tokens.push_back(new token_op(find_op->second, line_num));
                             break;
                         }
                     }
                     else
                     {
-                        throw compile_error("UNKNOWN OP " + cvt->wide2local(tmp));
+                        throw compile_error("UNKNOWN OP " + cvt->wide2local(tmp), line_num);
                     }
                 }
                 tmp.clear();
@@ -394,12 +407,12 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                 if (find_keyword != compiler_type::keyword_map.end())
                 {
                     // this is keyword
-                    tokens.push_back(new token_keyword(find_keyword->second));
+                    tokens.push_back(new token_keyword(find_keyword->second, line_num));
                 }
                 else
                 {
                     // this is name
-                    tokens.push_back(new token_name(cvt->wide2local(tmp)));
+                    tokens.push_back(new token_name(cvt->wide2local(tmp), line_num));
                 }
                 tmp.clear();
                 // dont increase {it}
