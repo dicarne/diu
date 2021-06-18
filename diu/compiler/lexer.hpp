@@ -10,8 +10,6 @@
 #include "token.hpp"
 #include "debug.hpp"
 
-
-
 enum class charset
 {
     ascii,
@@ -326,7 +324,24 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                     auto find_op = compiler_type::op_map.find(cvt->wide2local(tmp));
                     if (find_op != compiler_type::op_map.end())
                     {
-                        tokens.push_back(new token_op(find_op->second));
+                        switch (find_op->second)
+                        {
+                        case op_type::esb_:
+                            tokens.push_back(new token_op(op_type::slb_));
+                            tokens.push_back(new token_op(op_type::srb_));
+                            break;
+                        case op_type::emb_:
+                            tokens.push_back(new token_op(op_type::mlb_));
+                            tokens.push_back(new token_op(op_type::mrb_));
+                            break;
+                        case op_type::elb_:
+                            tokens.push_back(new token_op(op_type::llb_));
+                            tokens.push_back(new token_op(op_type::lrb_));
+                            break;
+                        default:
+                            tokens.push_back(new token_op(find_op->second));
+                            break;
+                        }
                     }
                     else
                     {

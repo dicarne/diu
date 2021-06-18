@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "token.hpp"
+#include "ast_node.hpp"
+
 using std::deque;
 using std::string;
 using std::unordered_map;
@@ -22,140 +24,18 @@ public:
 class AST
 {
 private:
-    /* data */
+    ast_node build_node_ast(deque<token_base *> tokens);
+    ast_func build_node_func(std::deque<token_base *>::iterator &it, deque<token_base *> &tokens);
+    deque<token_base *> get_tokens_in_next(op_type lft, op_type rgt, std::deque<token_base *>::iterator &it, deque<token_base *> &tokens);
+
 public:
     AST(/* args */);
     ~AST();
 
     unordered_map<string, UsePackageInfo> packages;
-    unordered_map<string, string> OuterSymbol;
-
-    bool error;
-
-    void build_ast(deque<token_base *> tokens)
-    {
-        for (auto it = tokens.begin(); it != tokens.end();)
-        {
-            auto t = *it;
-            if (t->get_type() == token_types::keyword)
-            {
-                auto ktype = static_cast<token_keyword *>(t)->type;
-                // handle [from]
-                if (ktype == keyword_type::from_)
-                {
-                    auto pkg = UsePackageInfo();
-                    it++;
-                    // handle pkgname
-                    if ((*it)->get_type() == token_types::name || (*it)->get_type() == token_types::string_l)
-                    {
-                        auto pkg_name = (*it)->get_type() == token_types::name ? static_cast<token_name *>(*it)->name : static_cast<token_string *>(*it)->content;
-                        pkg.packname = pkg_name;
-                        it++;
-                        // handle [use]
-                        if ((*it)->get_type() == token_types::keyword && static_cast<token_keyword *>(*it)->type == keyword_type::use_pkg_)
-                        {
-                            it++;
-                        }
-                        else
-                        {
-                            throw compile_error("[use] should follow [from pkgname]");
-                        }
-                        bool multi_import_symbol = false;
-                        // handle [{]
-                        if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::llb_)
-                        {
-                            multi_import_symbol = true;
-                            it++;
-                        }
-                        if (!multi_import_symbol)
-                        {
-                            if ((*it)->get_type() == token_types::name)
-                            {
-                                pkg.import_symbol.insert(static_cast<token_name *>(*it)->name);
-                                goto Complete_Import;
-                            }
-                            else
-                            {
-                                throw compile_error("import symbol name should follow [use]");
-                            }
-                        }
-                        else
-                        {
-                            while ((*it)->get_type() == token_types::name)
-                            {
-                                pkg.import_symbol.insert(static_cast<token_name *>(*it)->name);
-                                it++;
-                            }
-                            if (!((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::lrb_))
-                            {
-                                throw compile_error("[}] should at the end of [from ... use {...}] statement");
-                            }
-                            goto Complete_Import;
-                        }
-                    Complete_Import:
-                        it++;
-                        auto old_pkg = packages.find(pkg_name);
-                        if (old_pkg == packages.end())
-                        {
-                            packages[pkg_name] = pkg;
-                            for (auto os = pkg.import_symbol.begin(); os != pkg.import_symbol.end(); os++)
-                            {
-                                OuterSymbol[*os] = pkg_name;
-                            }
-                        }
-                        else
-                        {
-                            for (auto newpkg = pkg.import_symbol.begin(); newpkg != pkg.import_symbol.end(); newpkg++)
-                            {
-                                if (old_pkg->second.import_symbol.find(*newpkg) == old_pkg->second.import_symbol.end())
-                                {
-                                    old_pkg->second.import_symbol.insert(*newpkg);
-                                    OuterSymbol[*newpkg] = pkg_name;
-                                }
-                            }
-                        }
-                        continue;
-                    }
-                    else
-                    {
-                        error = true;
-                        throw compile_error("A pkgname should follow [from].");
-                    }
-                }
-                // end handle [from]
-
-                // handle [use]
-                if (ktype == keyword_type::use_pkg_)
-                {
-                    it++;
-                    if ((*it)->get_type() == token_types::name)
-                    {
-                        auto pkg_name = static_cast<token_name *>(*it)->name;
-                        auto pkg = UsePackageInfo();
-                        pkg.packname = pkg_name;
-                        auto old_pkg = packages.find(pkg_name);
-                        if (old_pkg == packages.end())
-                        {
-                            packages[pkg_name] = pkg;
-                        }
-                        else
-                        {
-                            old_pkg->second.use_namespace = true;
-                        }
-                        OuterSymbol[pkg_name] = pkg_name;
-                        it++;
-                        continue;
-                    }
-                    else
-                    {
-                        throw compile_error("pkgname should follow use");
-                    }
-                }
-                // end handle [use]
-            }
-            it++;
-        }
-    }
+    unordered_map<string, string> outer_symbol;
+    unordered_map<string, ast_node> nodes;
+    void build_ast_from_tokens(deque<token_base *> tokens);
 };
 
 AST::AST(/* args */)
@@ -166,4 +46,226 @@ AST::~AST()
 {
 }
 
+void AST::build_ast_from_tokens(deque<token_base *> tokens)
+{
+    for (auto it = tokens.begin(); it != tokens.end();)
+    {
+        auto t = *it;
+        if (t->get_type() == token_types::keyword)
+        {
+            auto ktype = static_cast<token_keyword *>(t)->type;
+            // handle [from]
+            if (ktype == keyword_type::from_)
+            {
+                auto pkg = UsePackageInfo();
+                it++;
+                // handle pkgname
+                if ((*it)->get_type() == token_types::name || (*it)->get_type() == token_types::string_l)
+                {
+                    auto pkg_name = (*it)->get_type() == token_types::name ? static_cast<token_name *>(*it)->name : static_cast<token_string *>(*it)->content;
+                    pkg.packname = pkg_name;
+                    it++;
+                    // handle [use]
+                    if ((*it)->get_type() == token_types::keyword && static_cast<token_keyword *>(*it)->type == keyword_type::use_pkg_)
+                    {
+                        it++;
+                    }
+                    else
+                    {
+                        throw compile_error("[use] should follow [from pkgname]");
+                    }
+                    bool multi_import_symbol = false;
+                    // handle [{]
+                    if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::llb_)
+                    {
+                        multi_import_symbol = true;
+                        it++;
+                    }
+                    if (!multi_import_symbol)
+                    {
+                        if ((*it)->get_type() == token_types::name)
+                        {
+                            pkg.import_symbol.insert(static_cast<token_name *>(*it)->name);
+                            goto Complete_Import;
+                        }
+                        else
+                        {
+                            throw compile_error("import symbol name should follow [use]");
+                        }
+                    }
+                    else
+                    {
+                        while ((*it)->get_type() == token_types::name)
+                        {
+                            pkg.import_symbol.insert(static_cast<token_name *>(*it)->name);
+                            it++;
+                        }
+                        if (!((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::lrb_))
+                        {
+                            throw compile_error("[}] should at the end of [from ... use {...}] statement");
+                        }
+                        goto Complete_Import;
+                    }
+                Complete_Import:
+                    it++;
+                    auto old_pkg = packages.find(pkg_name);
+                    if (old_pkg == packages.end())
+                    {
+                        packages[pkg_name] = pkg;
+                        for (auto os = pkg.import_symbol.begin(); os != pkg.import_symbol.end(); os++)
+                        {
+                            outer_symbol[*os] = pkg_name;
+                        }
+                    }
+                    else
+                    {
+                        for (auto newpkg = pkg.import_symbol.begin(); newpkg != pkg.import_symbol.end(); newpkg++)
+                        {
+                            if (old_pkg->second.import_symbol.find(*newpkg) == old_pkg->second.import_symbol.end())
+                            {
+                                old_pkg->second.import_symbol.insert(*newpkg);
+                                outer_symbol[*newpkg] = pkg_name;
+                            }
+                        }
+                    }
+                    continue;
+                }
+                else
+                {
+                    throw compile_error("A pkgname should follow [from].");
+                }
+            }
+            // end handle [from]
+
+            // handle [use]
+            if (ktype == keyword_type::use_pkg_)
+            {
+                it++;
+                if ((*it)->get_type() == token_types::name)
+                {
+                    auto pkg_name = static_cast<token_name *>(*it)->name;
+                    auto pkg = UsePackageInfo();
+                    pkg.packname = pkg_name;
+                    auto old_pkg = packages.find(pkg_name);
+                    if (old_pkg == packages.end())
+                    {
+                        packages[pkg_name] = pkg;
+                    }
+                    else
+                    {
+                        old_pkg->second.use_namespace = true;
+                    }
+                    outer_symbol[pkg_name] = pkg_name;
+                    it++;
+                    continue;
+                }
+                else
+                {
+                    throw compile_error("pkgname should follow use");
+                }
+            }
+            // end handle [use]
+
+            // handle [node]
+            if (ktype == keyword_type::node_)
+            {
+                it++;
+                if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::llb_)
+                {
+                    auto node = build_node_ast(get_tokens_in_next(op_type::llb_, op_type::lrb_, it, tokens));
+                }
+                else
+                {
+                    throw compile_error("[{] should follow [node]");
+                }
+            }
+            // end handle [node]
+        }
+        it++;
+    }
+}
+
+ast_node AST::build_node_ast(deque<token_base *> tokens)
+{
+    ast_node node;
+    for (auto it = tokens.begin(); it != tokens.end();)
+    {
+        if ((*it)->get_type() == token_types::keyword && static_cast<token_keyword *>(*it)->type == keyword_type::fn_)
+        {
+            // handle [fn]
+            it++;
+            auto fn = build_node_func(it, tokens);
+            node.funcs[fn.name] = fn;
+            continue;
+        }
+        if ((*it)->get_type() == token_types::keyword && static_cast<token_keyword *>(*it)->type == keyword_type::static_)
+        {
+            it++;
+            if ((*it)->get_type() == token_types::keyword && static_cast<token_keyword *>(*it)->type == keyword_type::fn_)
+            {
+                // handle [static fn]
+                it++;
+                auto static_fn = build_node_func(it, tokens);
+                node.static_funcs[static_fn.name] = static_fn;
+                continue;
+            }
+            else
+            {
+                //
+                throw compile_error("[fn] should follow [static]");
+            }
+        }
+        it++;
+    }
+
+    return node;
+}
+
+ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<token_base *> &tokens)
+{
+
+    ast_func fun;
+    if ((*it)->get_type() != token_types::name)
+    {
+        throw compile_error("a funcname should follow [fn]");
+    }
+    fun.name = static_cast<token_name *>(*it)->name;
+    auto func_body_tokens = get_tokens_in_next(op_type::llb_, op_type::lrb_, it, tokens);
+    // TODO: AST func in node
+    
+    return fun;
+}
+
+deque<token_base *> AST::get_tokens_in_next(op_type lft, op_type rgt, std::deque<token_base *>::iterator &it, deque<token_base *> &tokens)
+{
+    auto llb_count = 1;
+    deque<token_base *> in_node_token;
+    it++;
+    while (llb_count > 0 && it != tokens.end())
+    {
+        if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == lft)
+        {
+            llb_count++;
+        }
+        if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == rgt)
+        {
+            llb_count--;
+        }
+        if (llb_count == 0)
+        {
+            it++;
+            break;
+        }
+        else
+        {
+            in_node_token.push_back(*it);
+            it++;
+        }
+    }
+    if (llb_count > 0)
+    {
+        throw compile_error("no enough [}] after [{]");
+    }
+    return in_node_token;
+}
 #endif

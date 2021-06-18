@@ -23,6 +23,6 @@ int main(int, char **)
     lexer lex;
     lex.process_char_buff(buffer_q, tokens, charset::utf8);
     AST ast;
-    ast.build_ast(tokens);
+    ast.build_ast_from_tokens(tokens);
     return 0;
 }
