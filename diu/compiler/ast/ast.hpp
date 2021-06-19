@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <memory>
-#include "token.hpp"
+#include "../token.hpp"
 #include "ast_node.hpp"
 #include <vector>
 

@@ -2,7 +2,7 @@
 #define AST_EXPR_H_
 #include <string>
 #include <vector>
-#include "token.hpp"
+#include "../token.hpp"
 #include <memory>
 using std::shared_ptr;
 using std::string;

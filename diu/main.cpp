@@ -5,8 +5,8 @@
 #include "compiler/lexer.hpp"
 #include <deque>
 #include <fstream>
-#include "compiler/ast.hpp"
-#include "compiler/ast_runner.hpp"
+#include "compiler/ast/ast.hpp"
+#include "compiler/ast/ast_runner.hpp"
 
 int main(int, char **)
 {
