@@ -173,7 +173,7 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                     throw compile_error("pkgname should follow use", (*it)->line_num);
                 }
             }
-            // end handle [use]
+            // end handle [engine]
             if (ktype == keyword_type::engine_) {
                 it++;
                 if ((*it)->get_type() == token_types::string_l) {
