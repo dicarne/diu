@@ -376,10 +376,8 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                     throw compile_error("[{] should follow if(...)", (*fi)->line_num);
                 }
                 auto if_true_body = get_tokens_in_next(op_type::llb_, op_type::lrb_, fi, func_body_tokens);
-                stat.if_->if_true = make_shared<vector<ast_statement>>();
                 build_statements(*(stat.if_->if_true), if_true_body);
 
-                stat.if_->else_if = make_shared<vector<ast_if>>();
                 while (fi != func_body_tokens.end() && (*fi)->get_type() == token_types::keyword && static_cast<token_keyword *>(*fi)->type == keyword_type::elif_)
                 {
                     fi++;
@@ -398,10 +396,9 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                         throw compile_error("[{] should follow elif(...)", (*fi)->line_num);
                     }
                     auto el_body = get_tokens_in_next(op_type::llb_, op_type::lrb_, fi, func_body_tokens);
-                    build_statements(*(elif_.if_true), if_true_body);
+                    build_statements(*(elif_.if_true), el_body);
                     stat.if_->else_if->push_back(elif_);
                 }
-                stat.if_->if_false = make_shared<vector<ast_statement>>();
                 if (fi != func_body_tokens.end() && (*fi)->get_type() == token_types::keyword && static_cast<token_keyword *>(*fi)->type == keyword_type::else_)
                 {
                     fi++;

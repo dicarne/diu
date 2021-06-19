@@ -109,6 +109,32 @@ public:
                 run_expr(ss->expr);
                 cout << "[RET] [TOP]" << endl;
             }
+            if (ss->statemen_type == ast_statement::type::if_)
+            {
+                run_expr(ss->if_->cond);
+                cout << "[IF] [TOP]" << endl;
+                run_statements(*(ss->if_->if_true));
+                for (auto i = ss->if_->else_if->begin(); i != ss->if_->else_if->end(); i++)
+                {
+                    run_expr(i->cond);
+                    cout << "[ELIF] [TOP]" << endl;
+                    run_statements(*(i->if_true));
+                    cout << "[ELIF] [END]" << endl;
+                }
+                if (ss->if_->if_false->size() > 0)
+                {
+                    cout << "[ELSE]" << endl;
+                    run_statements(*(ss->if_->if_false));
+                    cout << "[ELSE] [END]" << endl;
+                }
+            }
+            if (ss->statemen_type == ast_statement::type::while_)
+            {
+                run_expr(ss->while_->cond);
+                cout << "[WHILE] [TOP]" << endl;
+                run_statements(*(ss->while_->statements));
+                cout << "[WHILE] [END]" << endl;
+            }
 
             cout << "------------" << endl;
         }

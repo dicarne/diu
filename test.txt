@@ -5,8 +5,14 @@ node Main{
         let a = 1 + 2 * (3 - 1) / add(2.4, 4)
         if(a>0){
              sys:print(a)
+        }elif(a<0){
+
+        }else{
+
         }
-       
+       while(a>0){
+           a = a+1
+       }
     }
 
     fn add(a: int, b: int) {
