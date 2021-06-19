@@ -74,6 +74,7 @@ enum class keyword_type
     elif_,
     else_,
     while_,
+    engine_
 };
 
 class compiler_type
@@ -197,7 +198,8 @@ const unordered_map<std::string, keyword_type> compiler_type::keyword_map = {
     {"if", keyword_type::if_},
     {"elif", keyword_type::elif_},
     {"else", keyword_type::else_},
-    {"while", keyword_type::while_}};
+    {"while", keyword_type::while_},
+    {"engine", keyword_type::engine_}};
 
 class compile_error final : public std::exception
 {

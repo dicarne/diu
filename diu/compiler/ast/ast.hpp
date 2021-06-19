@@ -39,7 +39,7 @@ private:
 public:
     AST(/* args */);
     ~AST();
-
+    string engine_ver;
     unordered_map<string, UsePackageInfo> packages;
     unordered_map<string, string> outer_symbol;
     unordered_map<string, ast_node> nodes;
@@ -174,6 +174,16 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                 }
             }
             // end handle [use]
+            if (ktype == keyword_type::engine_) {
+                it++;
+                if ((*it)->get_type() == token_types::string_l) {
+                    engine_ver = static_cast<token_string *>(*it)->content;
+                    it++;
+                    continue;
+                }else{
+                    throw compile_error("a version string should behind [engine]", (*it)->line_num);
+                }
+            }
 
             // handle [node]
             if (ktype == keyword_type::node_)
