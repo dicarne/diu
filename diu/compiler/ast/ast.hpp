@@ -9,6 +9,7 @@
 #include "../token.hpp"
 #include "ast_node.hpp"
 #include <vector>
+#include <sstream>
 
 using std::deque;
 using std::make_shared;
@@ -39,7 +40,7 @@ private:
 public:
     AST(/* args */);
     ~AST();
-    string engine_ver;
+    double engine_ver = 0;
     unordered_map<string, UsePackageInfo> packages;
     unordered_map<string, string> outer_symbol;
     unordered_map<string, ast_node> nodes;
@@ -174,13 +175,22 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                 }
             }
             // end handle [engine]
-            if (ktype == keyword_type::engine_) {
+            if (ktype == keyword_type::engine_)
+            {
                 it++;
-                if ((*it)->get_type() == token_types::string_l) {
-                    engine_ver = static_cast<token_string *>(*it)->content;
+                if (engine_ver != 0)
+                {
+                    throw compile_error("[engine] should only appear once", (*it)->line_num);
+                }
+                if ((*it)->get_type() == token_types::number)
+                {
+                    std::stringstream stream(static_cast<token_number *>(*it)->content);
+                    stream >> engine_ver;
                     it++;
                     continue;
-                }else{
+                }
+                else
+                {
                     throw compile_error("a version string should behind [engine]", (*it)->line_num);
                 }
             }

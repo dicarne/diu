@@ -7,9 +7,13 @@
 #include <fstream>
 #include "compiler/ast/ast.hpp"
 #include "compiler/ast/ast_runner.hpp"
+#include "compiler/bytecode/bytecode_writer.hpp"
+#include "compiler/bytecode/bytecode_reader.hpp"
+#include "compiler/bytecode/compile_bytecode.hpp"
 
 int main(int, char **)
 {
+
     char buffer[100];
     std::deque<char> buffer_q;
     std::ifstream file("test.txt");
@@ -25,7 +29,10 @@ int main(int, char **)
     lex.process_char_buff(buffer_q, tokens, charset::utf8);
     shared_ptr<AST> ast = make_shared<AST>();
     ast->build_ast_from_tokens(tokens);
-    ast_runner runner(ast);
-    runner.run();
+
+    compile_bytecode compiler(ast, "test.diuc");
+    compiler.run();
+    //bytecode_reader br("test.diuc");
+    //br.readall();
     return 0;
 }
