@@ -306,6 +306,11 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
         {
             type = token_types::op;
             tmp += *it;
+            if (*it == ')' || *it == '}' || *it == ']')
+            {
+                it++;
+                goto CompleteOPtoken;
+            }
             it++;
             continue;
         }
@@ -314,11 +319,13 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             if (compiler_type::issignal(*it))
             {
                 tmp += *it;
+
                 it++;
                 continue;
             }
             else
             {
+            CompleteOPtoken:
                 type = token_types::none;
 
                 if (cvt->wide2local(tmp) == "//")

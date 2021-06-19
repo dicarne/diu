@@ -34,6 +34,7 @@ private:
     shared_ptr<ast_expr> get_next_expr(std::deque<token_base *>::iterator &it, deque<token_base *> &tokens);
     deque<token_base *> get_tokens_in_next(op_type lft, op_type rgt, std::deque<token_base *>::iterator &it, deque<token_base *> &tokens);
     shared_ptr<ast_expr> maybe_binary(shared_ptr<ast_expr> left, int my_prec, std::deque<token_base *>::iterator &it, deque<token_base *> &tokens);
+    void build_statements(vector<ast_statement> &statements, deque<token_base *> &tokens);
 
 public:
     AST(/* args */);
@@ -308,8 +309,15 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
     {
         throw compile_error("[(] should follow func def", (*it)->line_num);
     }
-    // body
     auto func_body_tokens = get_tokens_in_next(op_type::llb_, op_type::lrb_, it, tokens);
+    build_statements(fun.statements, func_body_tokens);
+    return fun;
+}
+
+void AST::build_statements(vector<ast_statement> &statements, deque<token_base *> &func_body_tokens)
+{
+    // body
+
     for (auto fi = func_body_tokens.begin(); fi != func_body_tokens.end();)
     {
         if ((*fi)->get_type() == token_types::keyword)
@@ -319,23 +327,23 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
             {
                 // let statement
                 ast_statement stat;
-                ast_assign let_assign;
+                auto let_assign = make_shared<ast_assign>();
                 fi++;
                 if ((*fi)->get_type() == token_types::name)
                 {
-                    let_assign.name = static_cast<token_name *>(*fi)->name;
-                    let_assign.newsymbol = true;
+                    let_assign->name = static_cast<token_name *>(*fi)->name;
+                    let_assign->newsymbol = true;
                     fi++; // eat =
                     if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::asi_))
                     {
-                        throw compile_error("= should follow [let]", (*it)->line_num);
+                        throw compile_error("= should follow [let]", (*fi)->line_num);
                     }
                     fi++;
                     // handle remain statement
-                    let_assign.expr = get_next_expr(fi, func_body_tokens);
+                    let_assign->expr = get_next_expr(fi, func_body_tokens);
                     stat.statemen_type = ast_statement::type::assign;
                     stat.assign = let_assign;
-                    fun.atatements.push_back(stat);
+                    statements.push_back(stat);
                     continue;
                 }
             }
@@ -346,7 +354,82 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
                 stat.statemen_type = ast_statement::type::ret;
                 fi++;
                 stat.expr = get_next_expr(fi, func_body_tokens);
-                fun.atatements.push_back(stat);
+                statements.push_back(stat);
+                continue;
+            }
+            else if (token->type == keyword_type::if_)
+            {
+                fi++;
+                ast_statement stat;
+                stat.statemen_type = ast_statement::type::if_;
+                if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::slb_))
+                {
+                    throw compile_error("[(] should follow if", (*fi)->line_num);
+                }
+                auto cond = get_tokens_in_next(op_type::slb_, op_type::srb_, fi, func_body_tokens);
+                stat.if_ = make_shared<ast_if>();
+                auto cond_if = cond.begin();
+                stat.if_->cond = get_next_expr(cond_if, cond);
+
+                if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::llb_))
+                {
+                    throw compile_error("[{] should follow if(...)", (*fi)->line_num);
+                }
+                auto if_true_body = get_tokens_in_next(op_type::llb_, op_type::lrb_, fi, func_body_tokens);
+                stat.if_->if_true = make_shared<vector<ast_statement>>();
+                build_statements(*(stat.if_->if_true), if_true_body);
+
+                stat.if_->else_if = make_shared<vector<ast_if>>();
+                while (fi != func_body_tokens.end() && (*fi)->get_type() == token_types::keyword && static_cast<token_keyword *>(*fi)->type == keyword_type::elif_)
+                {
+                    fi++;
+                    ast_if elif_;
+
+                    if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::slb_))
+                    {
+                        throw compile_error("[(] should follow elif", (*fi)->line_num);
+                    }
+                    auto el_cond = get_tokens_in_next(op_type::slb_, op_type::srb_, fi, func_body_tokens);
+                    auto el_cond_it = el_cond.begin();
+                    elif_.cond = get_next_expr(el_cond_it, el_cond);
+
+                    if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::llb_))
+                    {
+                        throw compile_error("[{] should follow elif(...)", (*fi)->line_num);
+                    }
+                    auto el_body = get_tokens_in_next(op_type::llb_, op_type::lrb_, fi, func_body_tokens);
+                    build_statements(*(elif_.if_true), if_true_body);
+                    stat.if_->else_if->push_back(elif_);
+                }
+                stat.if_->if_false = make_shared<vector<ast_statement>>();
+                if (fi != func_body_tokens.end() && (*fi)->get_type() == token_types::keyword && static_cast<token_keyword *>(*fi)->type == keyword_type::else_)
+                {
+                    fi++;
+                    if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::llb_))
+                    {
+                        throw compile_error("[{] should follow else", (*fi)->line_num);
+                    }
+                    auto else_body = get_tokens_in_next(op_type::llb_, op_type::lrb_, fi, func_body_tokens);
+                    build_statements(*(stat.if_->if_false), else_body);
+                }
+
+                statements.push_back(stat);
+                continue;
+            }
+
+            else if (token->type == keyword_type::while_)
+            {
+                fi++;
+                ast_statement stat;
+                stat.statemen_type = ast_statement::type::while_;
+                auto cond = get_tokens_in_next(op_type::slb_, op_type::srb_, fi, func_body_tokens);
+                stat.while_ = make_shared<ast_while>();
+                auto expr_it = cond.begin();
+                stat.while_->cond = get_next_expr(expr_it, cond);
+                auto body = get_tokens_in_next(op_type::llb_, op_type::lrb_, fi, func_body_tokens);
+                stat.while_->statements = make_shared<vector<ast_statement>>();
+                build_statements(*(stat.while_->statements), body);
+                statements.push_back(stat);
                 continue;
             }
             else
@@ -378,13 +461,13 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
                     // A = b
                     fi++;
                     ast_statement stat;
-                    ast_assign let_assign;
+                    auto let_assign = make_shared<ast_assign>();
                     // handle remain statement
-                    let_assign.expr = get_next_expr(fi, func_body_tokens);
+                    let_assign->expr = get_next_expr(fi, func_body_tokens);
                     stat.statemen_type = ast_statement::type::assign;
-                    let_assign.object_chain = name_chain;
+                    let_assign->object_chain = name_chain;
                     stat.assign = let_assign;
-                    fun.atatements.push_back(stat);
+                    statements.push_back(stat);
                     continue;
                 }
                 else if (nop->type == op_type::slb_ || nop->type == op_type::pair_)
@@ -395,7 +478,7 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
                     auto expr = get_next_expr(fi, func_body_tokens);
                     stat.statemen_type = ast_statement::type::expr;
                     stat.expr = expr;
-                    fun.atatements.push_back(stat);
+                    statements.push_back(stat);
                     continue;
                 }
                 else
@@ -411,10 +494,9 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
         std::cout << (*fi)->dump() << std::endl;
         fi++;
     }
-
-    return fun;
 }
-#include <iostream>
+
+// current it should on left op
 deque<token_base *> AST::get_tokens_in_next(op_type lft, op_type rgt, std::deque<token_base *>::iterator &it, deque<token_base *> &tokens)
 {
     auto llb_count = 1;

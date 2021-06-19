@@ -3,7 +3,10 @@ node Main{
     fn main() {
         let b = "HELLO"
         let a = 1 + 2 * (3 - 1) / add(2.4, 4)
-        sys:print(a)
+        if(a>0){
+             sys:print(a)
+        }
+       
     }
 
     fn add(a: int, b: int) {

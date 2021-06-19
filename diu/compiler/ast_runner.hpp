@@ -51,61 +51,66 @@ public:
                     cout << ag->arg_name << "\t:\t" << ag->type_name << endl;
                 }
                 cout << "statement:" << endl;
-                for (auto ss = fkv->second.atatements.begin(); ss != fkv->second.atatements.end(); ss++)
+                run_statements(fkv->second.statements);
+            }
+        }
+    }
+
+    void run_statements(vector<ast_statement> &statements)
+    {
+        for (auto ss = statements.begin(); ss != statements.end(); ss++)
+        {
+            if (ss->statemen_type == ast_statement::type::assign)
+            {
+                auto &ass = ss->assign;
+                if (ass->newsymbol)
                 {
-                    if (ss->statemen_type == ast_statement::type::assign)
-                    {
-                        auto &ass = ss->assign;
-                        if (ass.newsymbol)
-                        {
-                            cout << "[VAR] " << ass.name << endl;
-                        }
-                        bool ins = false;
-                        if (ass.expr->expr_type == ast_expr::type::instance_num || ass.expr->expr_type == ast_expr::type::instance_string)
-                        {
-                            ins = true;
-                        }
-                        else
-                        {
-                            run_expr(ass.expr);
-                        }
+                    cout << "[VAR] " << ass->name << endl;
+                }
+                bool ins = false;
+                if (ass->expr->expr_type == ast_expr::type::instance_num || ass->expr->expr_type == ast_expr::type::instance_string)
+                {
+                    ins = true;
+                }
+                else
+                {
+                    run_expr(ass->expr);
+                }
 
-                        cout << "[LET] ";
-                        for (auto i = ass.object_chain.begin(); i != ass.object_chain.end(); i++)
-                        {
-                            cout << *i << ".";
-                        }
-                        cout << ass.name << " [=] ";
+                cout << "[LET] ";
+                for (auto i = ass->object_chain.begin(); i != ass->object_chain.end(); i++)
+                {
+                    cout << *i << ".";
+                }
+                cout << ass->name << " [=] ";
 
-                        if (ins)
-                        {
-                            if (ass.expr->expr_type == ast_expr::type::instance_num)
-                            {
-                                cout << " [NUMI] " << ass.expr->ins_value << endl;
-                            }
-                            if (ass.expr->expr_type == ast_expr::type::instance_string)
-                            {
-                                cout << " [STRI] " << ass.expr->ins_value << endl;
-                            }
-                        }
-                        else
-                        {
-                            cout << "[TOP]" << endl;
-                        }
-                    }
-                    if (ss->statemen_type == ast_statement::type::expr)
+                if (ins)
+                {
+                    if (ass->expr->expr_type == ast_expr::type::instance_num)
                     {
-                        run_expr(ss->expr);
+                        cout << " [NUMI] " << ass->expr->ins_value << endl;
                     }
-                    if (ss->statemen_type == ast_statement::type::ret)
+                    if (ass->expr->expr_type == ast_expr::type::instance_string)
                     {
-                        run_expr(ss->expr);
-                        cout << "[RET] [TOP]" << endl;
+                        cout << " [STRI] " << ass->expr->ins_value << endl;
                     }
-
-                    cout << "------------" << endl;
+                }
+                else
+                {
+                    cout << "[TOP]" << endl;
                 }
             }
+            if (ss->statemen_type == ast_statement::type::expr)
+            {
+                run_expr(ss->expr);
+            }
+            if (ss->statemen_type == ast_statement::type::ret)
+            {
+                run_expr(ss->expr);
+                cout << "[RET] [TOP]" << endl;
+            }
+
+            cout << "------------" << endl;
         }
     }
 
@@ -162,7 +167,20 @@ public:
             case op_type::mod_:
                 cout << "[%] ";
                 break;
+            case op_type::gt_:
+                cout << "[>] ";
+                break;
+            case op_type::lt_:
+                cout << "[<] ";
+                break;
+            case op_type::ge_:
+                cout << "[>=] ";
+                break;
+            case op_type::le_:
+                cout << "[<=] ";
+                break;
             default:
+                cout << "[OP] ";
                 break;
             }
             cout << "2";
