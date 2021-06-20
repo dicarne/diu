@@ -6,6 +6,7 @@
 #include <string>
 #include <deque>
 #include <locale>
+#include <fstream>
 #include "compiler_type.hpp"
 #include "token.hpp"
 #include "debug.hpp"
@@ -168,6 +169,7 @@ public:
     lexer(/* args */);
     ~lexer();
     void process_char_buff(const std::deque<char> &raw_buff, std::deque<token_base *> &tokens, charset encoding);
+    std::deque<token_base *> process_char_buff(string filepath, charset encoding);
 };
 
 lexer::lexer(/* args */)
@@ -178,6 +180,22 @@ lexer::~lexer()
 {
 }
 #include <iostream>
+
+std::deque<token_base *> lexer::process_char_buff(string filepath, charset encoding)
+{
+    std::deque<char> buffer_q;
+    std::ifstream file("test.txt");
+    while (!file.eof())
+    {
+        auto c = file.get();
+        if (c == -1)
+            break;
+        buffer_q.push_back(c);
+    }
+    std::deque<token_base *> tokens;
+    process_char_buff(buffer_q, tokens, charset::utf8);
+    return tokens;
+}
 
 void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token_base *> &tokens, charset encoding)
 {
@@ -214,7 +232,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             {
                 nextlines[l] = line_num;
                 line_num++;
-                DEBUG_ERROR(line_num);
+                //DEBUG_ERROR(line_num);
             }
         }
         // make string token
@@ -240,7 +258,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                 {
                     insideStr = false;
                     // REVIEW: ADD NEW ITER TOKEN
-                    DEBUG_LOG2("STRING\t\t", tmp);
+                    //DEBUG_LOG2("STRING\t\t", tmp);
                     tokens.push_back(new token_string(cvt->wide2local(tmp), line_num));
                     tmp.clear();
                     it++;
@@ -289,7 +307,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                 else
                 {
                     // REVIEW: MAKE NUMBER TOKEN
-                    DEBUG_LOG2("NUMBER\t\t", tmp);
+                    //DEBUG_LOG2("NUMBER\t\t", tmp);
                     tokens.push_back(new token_number(cvt->wide2local(tmp), line_num));
 
                     tmp.clear();
@@ -335,7 +353,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                 else
                 {
                     // REVIEW: MAKE SIGNAL TOKEN
-                    DEBUG_LOG2("OP\t\t", tmp);
+                    //DEBUG_LOG2("OP\t\t", tmp);
                     auto find_op = compiler_type::op_map.find(cvt->wide2local(tmp));
                     if (find_op != compiler_type::op_map.end())
                     {
@@ -375,7 +393,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             if (*it == '\n' || *it == -1)
             {
                 type = token_types::none;
-                DEBUG_LOG2("COMMENT\t\t", tmp);
+                //DEBUG_LOG2("COMMENT\t\t", tmp);
                 tmp.clear();
                 continue;
             }
@@ -408,7 +426,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             {
                 type = token_types::none;
                 // REVIEW: MAKE NAME TOKEN
-                DEBUG_LOG2("NAME\t\t", tmp);
+                //DEBUG_LOG2("NAME\t\t", tmp);
                 auto name_str = cvt->wide2local(tmp);
                 auto find_keyword = compiler_type::keyword_map.find(name_str);
                 if (find_keyword != compiler_type::keyword_map.end())
@@ -435,7 +453,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
         // end file
         if (!compiler_type::isempty(*it))
         {
-            DEBUG_ERROR(*it);
+            //DEBUG_ERROR(*it);
         }
         it++;
     }

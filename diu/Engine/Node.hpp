@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "Type.hpp"
+#include "codes/CodeNode.hpp"
 using std::queue;
 using std::string;
 using std::vector;
@@ -17,6 +18,7 @@ public:
     PID callbackNode;
     vector<Object> args;
 };
+
 class Node
 {
 
@@ -25,16 +27,21 @@ private:
 
 public:
     PID Pid;
-    Node(PID pid);
+    Node();
     ~Node();
+    shared_ptr<CodeNode> code_page;
+    void call(NodeMessage message);
 };
 
-Node::Node(PID pid) : Pid(pid)
+Node::Node()
 {
-    
 }
 
 Node::~Node()
+{
+}
+
+void Node::call(NodeMessage message)
 {
 }
 #endif

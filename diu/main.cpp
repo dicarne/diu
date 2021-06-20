@@ -6,29 +6,16 @@
 #include <deque>
 #include <fstream>
 #include "compiler/ast/ast.hpp"
-#include "compiler/ast/ast_runner.hpp"
-#include "compiler/bytecode/bytecode_writer.hpp"
 #include "compiler/bytecode/bytecode_reader.hpp"
 #include "compiler/bytecode/compile_bytecode.hpp"
-
+#include "Engine/codes/CodeModule.hpp"
+#include "Engine/codes/CodeEngine.hpp"
 
 int main(int, char **)
 {
 
-    return 0;
-    char buffer[100];
-    std::deque<char> buffer_q;
-    std::ifstream file("test.txt");
-    while (!file.eof())
-    {
-        auto c = file.get();
-        if (c == -1)
-            break;
-        buffer_q.push_back(c);
-    }
-    std::deque<token_base *> tokens;
     lexer lex;
-    lex.process_char_buff(buffer_q, tokens, charset::utf8);
+    auto tokens = lex.process_char_buff("test.diu", charset::utf8);
     shared_ptr<AST> ast = make_shared<AST>();
     ast->build_ast_from_tokens(tokens);
 
@@ -36,8 +23,12 @@ int main(int, char **)
     compiler.run();
 
     bytecode_reader br("test3.diuc");
-    br.readall();
-    //bytecode_reader br("test.diuc");
-    //br.readall();
+    auto mod = br.readall();
+    auto ce = make_shared<CodeEngine>();
+    ENGINE.codes = ce;
+
+    ce->modules[mod->module_name] = mod;
+
+    ENGINE.Run("test3.diuc", "Main", "main");
     return 0;
 }
