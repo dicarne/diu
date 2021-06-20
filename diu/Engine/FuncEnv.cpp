@@ -16,6 +16,7 @@ void FuncEnv::call_another_func(shared_ptr<Object> symbol, string name, vector<O
     m->name = name;
     m->id = id;
     m->args = args;
+    node->call_another_func(this, symbol, m);
 }
 
 void FuncEnv::run(int &limit)

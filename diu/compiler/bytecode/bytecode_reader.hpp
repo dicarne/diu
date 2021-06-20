@@ -203,6 +203,9 @@ public:
                     case opcode::JUMP_NIF:
                         cout << "JUMP_NIF\t\t" << 0 << " " << cmd << endl;
                         break;
+                    case opcode::WAIT_FUNC_CALL:
+                        cout << "WAIT_FUNC_CALL\t" << 0 << " " << cmd << endl;
+                        break;
                     default:
                         cout << "??\t\t\t"
                              << " " << int(op) << " " << (int)info << " " << (int)cmd << endl;

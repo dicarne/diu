@@ -12,6 +12,7 @@
 #include <list>
 #include "NodeMessage.hpp"
 #include "Engine.h"
+#include <iostream>
 
 using std::list;
 using std::make_shared;
@@ -58,9 +59,9 @@ public:
         waitting_callback[msg->id] = caller;
         run_func(f);
     }
-    void call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, NodeMessage *msg)
+    void call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_ptr<NodeMessage> msg)
     {
-        // cout << msg->name << endl;
+        std::cout << msg->name << std::endl;
         // TODO:
     }
 };

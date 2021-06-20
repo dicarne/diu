@@ -629,6 +629,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
         if (expr->expr_type == ast_expr::type::func_call)
         {
             it++;
+            auto type = (*it)->get_type();
             if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::slb_)
             {
                 it++;

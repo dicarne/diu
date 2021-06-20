@@ -1,18 +1,21 @@
-use io
-from io use { print }
-from "./module" use { Lib1 }
+use sys
 node Main{
-    static fn main() {
-        let lib = new Lib1()
-        let str = "HELLO\nWORLD"
-        lib:hello(str, ", WULA")
-        wait(100)
+    fn main() {
+        let b = "HELLO"
+        let a = 1 + 2 * (3 - 1) / add(2.4, 4)
+        if(1>0){
+             sys:print(a)
+        }elif(a<0){
+            e.f = 6
+        }else{
 
-        // 在此等待，运行结束后再运行接下来的代码
-        await lib.hello()
+        }
+       while(a>0){
+           a = a+1
+       }
     }
-    static fn hello(text: str, str2: str) {
-        io:print(text)
-        print(text)
+
+    fn add(a: int, b: int) {
+        return a + b
     }
 }

@@ -166,6 +166,7 @@ class lexer
 private:
     /* data */
 public:
+    bool show_debug = false;
     lexer(/* args */);
     ~lexer();
     void process_char_buff(const std::deque<char> &raw_buff, std::deque<token_base *> &tokens, charset encoding);
@@ -258,7 +259,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                 {
                     insideStr = false;
                     // REVIEW: ADD NEW ITER TOKEN
-                    //DEBUG_LOG2("STRING\t\t", tmp);
+                    if(show_debug) DEBUG_LOG2("STRING\t\t", tmp);
                     tokens.push_back(new token_string(cvt->wide2local(tmp), line_num));
                     tmp.clear();
                     it++;
@@ -271,7 +272,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             it++;
             continue;
         }
-        if (*it == '\"')
+        if (type == token_types::none && *it == '\"')
         {
             insideStr = true;
             it++;
@@ -353,7 +354,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                 else
                 {
                     // REVIEW: MAKE SIGNAL TOKEN
-                    //DEBUG_LOG2("OP\t\t", tmp);
+                    if(show_debug) DEBUG_LOG2("OP\t\t", tmp);
                     auto find_op = compiler_type::op_map.find(cvt->wide2local(tmp));
                     if (find_op != compiler_type::op_map.end())
                     {
@@ -393,7 +394,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             if (*it == '\n' || *it == -1)
             {
                 type = token_types::none;
-                //DEBUG_LOG2("COMMENT\t\t", tmp);
+                if(show_debug) DEBUG_LOG2("COMMENT\t\t", tmp);
                 tmp.clear();
                 continue;
             }
@@ -426,7 +427,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             {
                 type = token_types::none;
                 // REVIEW: MAKE NAME TOKEN
-                //DEBUG_LOG2("NAME\t\t", tmp);
+                if(show_debug) DEBUG_LOG2("NAME\t\t", tmp);
                 auto name_str = cvt->wide2local(tmp);
                 auto find_keyword = compiler_type::keyword_map.find(name_str);
                 if (find_keyword != compiler_type::keyword_map.end())
@@ -453,7 +454,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
         // end file
         if (!compiler_type::isempty(*it))
         {
-            //DEBUG_ERROR(*it);
+            if(show_debug) DEBUG_ERROR(*it);
         }
         it++;
     }

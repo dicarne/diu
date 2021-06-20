@@ -63,10 +63,22 @@ void Node::run_once()
         {
             auto nodemsg = new NodeMessage();
             nodemsg->callbackNode = cur_func->callback_node;
-            nodemsg->id = cur_func->id;
+            nodemsg->id = cur_func->callback_id;
             nodemsg->type = NodeMessageType::Callback;
             nodemsg->args.push_back(*(cur_func->ret->copy()));
-            engine->SendMessage(nodemsg);
+            if (nodemsg->callbackNode.pid == 0)
+            {
+                // LOCAL
+                auto fw = waitting_callback.find(nodemsg->id);
+                if (fw != waitting_callback.end())
+                {
+                    fw->second->handle_callback(*(cur_func->ret->copy()));
+                }
+                waitting_callback.erase(nodemsg->id);
+                delete nodemsg;
+            }
+            else
+                engine->SendMessage(nodemsg);
         }
     }
 }
