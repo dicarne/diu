@@ -8,6 +8,7 @@
 using std::string;
 using std::unordered_map;
 using std::vector;
+using std::shared_ptr;
 
 class CodeNode;
 class CodeModule

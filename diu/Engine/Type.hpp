@@ -5,17 +5,17 @@
 #include <vector>
 #include <memory>
 #include <variant>
+#include "runtime_error.hpp"
+
+using std::make_shared;
 using std::shared_ptr;
 using std::string;
-using std::variant;
 using std::unordered_map;
+using std::variant;
 using std::vector;
 typedef unsigned long long int64;
-class PID
+struct PID
 {
-private:
-    /* data */
-public:
     int engine;
     int64 pid;
     int server;
@@ -92,20 +92,21 @@ public:
 
 enum ObjectRawType
 {
-    Null,
-    Pid,
-    Int,
-    Num,
+    Null, // !
+    Pid,  // !
+    Int,  // !
+    Num,  // !
     Bool,
     Map,
     Array,
-    Str,
-    Struct
+    Str,       // !
+    Struct,    // !
+    TypeSymbol // !
 };
 
 class Object;
-typedef variant<int, PID, double, bool, string, vector<shared_ptr<Object>>, shared_ptr<Object>, unordered_map<string, shared_ptr<Object>>> var;
-
+typedef variant<int, PID, double, bool, string, shared_ptr<vector<string>>, vector<shared_ptr<Object>>, shared_ptr<Object>, unordered_map<string, shared_ptr<Object>>> var;
+class FuncEnv;
 class Object
 {
 private:
@@ -113,14 +114,210 @@ private:
 public:
     var value;
     ObjectRawType type;
+    shared_ptr<unordered_map<string, shared_ptr<Object>>> table;
     Object(ObjectRawType type)
     {
         this->type = type;
+        if (type == ObjectRawType::Struct)
+        {
+            table = make_shared<unordered_map<string, shared_ptr<Object>>>();
+        }
+        else
+        {
+            table = nullptr;
+        }
+        if (type == ObjectRawType::TypeSymbol)
+        {
+            value = make_shared<vector<string>>();
+        }
     }
-    void Set(ObjectRawType type, var value)
+    Object(double d)
+    {
+        this->type = ObjectRawType::Num;
+        value = d;
+    }
+    Object(bool d)
+    {
+        this->type = ObjectRawType::Num;
+        value = d ? 1 : 0;
+    }
+    Object(int d)
+    {
+        this->type = ObjectRawType::Num;
+        value = double(d);
+    }
+    Object(string str)
+    {
+        this->type = ObjectRawType::Str;
+        value = str;
+    }
+    void set(ObjectRawType type, var value)
     {
         this->type = type;
         this->value = value;
+    }
+    void set(shared_ptr<Object> obj)
+    {
+        this->type = obj->type;
+        this->value = obj->value;
+        this->table = obj->table;
+    }
+    Object(const Object &ano)
+    {
+        value = ano.value;
+        type = ano.type;
+        this->table = ano.table;
+    }
+
+    shared_ptr<Object> copy()
+    {
+        auto p = make_shared<Object>(type);
+        switch (type)
+        {
+        case ObjectRawType::Num:
+            p->value = std::get<double>(value);
+            break;
+        case ObjectRawType::Bool:
+            p->value = std::get<double>(value);
+            break;
+        case ObjectRawType::Str:
+            p->value = std::get<string>(value);
+            break;
+        case ObjectRawType::Pid:
+            p->value = std::get<PID>(value);
+            break;
+        case ObjectRawType::Struct:
+        {
+            for (auto &kv : (*table))
+            {
+                (*p->table)[kv.first] = kv.second->copy();
+            }
+        }
+        break;
+        case ObjectRawType::TypeSymbol:
+        {
+            auto symbols = std::get<shared_ptr<vector<string>>>(value);
+            auto newsymbols = std::get<shared_ptr<vector<string>>>(p->value);
+            for (auto &s : *symbols)
+            {
+                newsymbols->push_back(s);
+            }
+        }
+        break;
+        default:
+            break;
+        }
+        return p;
+    }
+
+    bool as_bool()
+    {
+        if (type == ObjectRawType::Num)
+        {
+            if (std::get<double>(value) == 0)
+                return false;
+        }
+        return true;
+    }
+
+    shared_ptr<Object> get_child(string name)
+    {
+        if (type != ObjectRawType::Struct)
+        {
+            throw runtime_error("Can't get child in a simple value");
+        }
+        auto f = table->find(name);
+        if (f == table->end())
+        {
+            throw runtime_error("Can't find this child: " + name);
+        }
+        return f->second;
+    }
+
+    void symbol_find(string name)
+    {
+        if (type != ObjectRawType::TypeSymbol)
+        {
+            throw runtime_error("Can't find symbol in a simple value");
+        }
+        auto chain = std::get<shared_ptr<vector<string>>>(value);
+        chain->push_back(name);
+    }
+
+    static shared_ptr<Object> add(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    {
+        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        {
+            return make_shared<Object>(std::get<double>(a->value) + std::get<double>(b->value));
+        }
+        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        {
+            return make_shared<Object>(std::get<string>(a->value) + std::get<string>(b->value));
+        }
+        throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
+        return make_shared<Object>(0);
+    }
+    static shared_ptr<Object> sub(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    {
+        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        {
+            return make_shared<Object>(std::get<double>(a->value) - std::get<double>(b->value));
+        }
+        throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
+        return make_shared<Object>(0);
+    }
+    static shared_ptr<Object> mul(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    {
+        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        {
+            return make_shared<Object>(std::get<double>(a->value) * std::get<double>(b->value));
+        }
+        throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
+        return make_shared<Object>(0);
+    }
+    static shared_ptr<Object> div(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    {
+        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        {
+            return make_shared<Object>(std::get<double>(a->value) / std::get<double>(b->value));
+        }
+        throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
+        return make_shared<Object>(0);
+    }
+    static shared_ptr<Object> mod(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    {
+        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        {
+            return make_shared<Object>(int(std::get<double>(a->value)) % int(std::get<double>(b->value)));
+        }
+        throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
+        return make_shared<Object>(0);
+    }
+    static shared_ptr<Object> equ(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    {
+        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        {
+            return make_shared<Object>(std::get<double>(a->value) == std::get<double>(b->value));
+        }
+        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        {
+            return make_shared<Object>(std::get<string>(a->value) == std::get<string>(b->value));
+        }
+        throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
+        return make_shared<Object>(0);
+    }
+    static shared_ptr<Object> neq(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    {
+        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        {
+            return make_shared<Object>(std::get<double>(a->value) != std::get<double>(b->value));
+        }
+        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        {
+            return make_shared<Object>(std::get<string>(a->value) != std::get<string>(b->value));
+        }
+        throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
+        return make_shared<Object>(0);
     }
 };
 #endif

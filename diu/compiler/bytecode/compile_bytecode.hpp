@@ -83,6 +83,7 @@ public:
             auto pk = it.second;
             symbol_import_index[sy] = writer->reg_symbol(const_value_index[sy], pkg_import_index[pk]);
         }
+        get_const_double_index("0");
 
         for (auto &node : ast->nodes)
         {
@@ -164,14 +165,14 @@ private:
                             //cout << "[VAR_FIND_C] " + ass->object_chain[i] << " " << get_const_index(ass->object_chain[i]) << endl;
                         }
                     }
-                    write_op(stream, opcode::VAR_FIND_C, 0, get_const_index(ass->object_chain[ass->object_chain.size() - 1]));
-                    write_op(stream, opcode::LET_C, 0, 0);
+                    //write_op(stream, opcode::VAR_FIND_C, 0, get_const_index(ass->object_chain[ass->object_chain.size() - 1]));
+                    write_op(stream, opcode::LET_C, 0, get_const_index(ass->object_chain[ass->object_chain.size() - 1]));
                     //cout << "[LET_C] " << ass->object_chain[ass->object_chain.size() - 1] << " = [TOP]" << endl;
                 }
                 else
                 {
-                    write_op(stream, opcode::VAR_FIND, 0, get_const_index(ass->name));
-                    write_op(stream, opcode::LET, 0, 0);
+                    //write_op(stream, opcode::VAR_FIND, 0, get_const_index(ass->name));
+                    write_op(stream, opcode::LET, 0, get_const_index(ass->name));
                     //cout << "[LET] " << ass->name << " at " << get_const_index(ass->name) << " = [TOP]" << endl;
                 }
             }
@@ -232,17 +233,17 @@ private:
                     //cout << "[ELSE] [END]" << endl;
                 }
                 // -------------------------
-                write_op(stream, opcode::JUMP_NIF, 0, body_size - 1);
+                write_op(stream, opcode::JUMP_NIF, 0, body_size / 4);
                 stream.write(if_true_states.c_str(), if_true_states.size());
-                write_op(stream, opcode::JUMP, 0, _next_elif - 1);
+                write_op(stream, opcode::JUMP, 0, _next_elif / 4);
                 for (auto i = 0; i < ss->if_->else_if->size(); i++)
                 {
                     stream.write(elif_conds[i].c_str(), elif_conds[i].size());
                     _next_elif += elif_conds[i].size();
                     _next_elif += op_size;
-                    write_op(stream, opcode::JUMP_NIF, 0, _next_elif - 1);
+                    write_op(stream, opcode::JUMP_NIF, 0, _next_elif / 4);
                     stream.write(elif_bodys[i].c_str(), elif_bodys[i].size());
-                    write_op(stream, opcode::JUMP, 0, body_size - 1);
+                    write_op(stream, opcode::JUMP, 0, body_size / 4);
                 }
                 stream.write(else_body.c_str(), else_body.size());
             }
@@ -261,9 +262,9 @@ private:
                 // while (jump nif)
                 // ...
                 // jump back
-                write_op(stream, opcode::JUMP_NIF, 0, body_size - 1);
+                write_op(stream, opcode::JUMP_NIF, 0, body_size / 4);
                 stream.write(body.c_str(), body.size());
-                write_op(stream, opcode::JUMP, 0, -body_size);
+                write_op(stream, opcode::JUMP, 0, -body_size / 4 + 1);
             }
 
             //cout << "------------" << endl;
@@ -280,7 +281,7 @@ private:
             //cout << "[LOAD] [STRI] " << expr->ins_value << " at " << get_const_index(expr->ins_value) << endl;
             break;
         case ast_expr::type::instance_num:
-            write_op(stream, opcode::LOAD, 0, get_const_index(expr->ins_value));
+            write_op(stream, opcode::LOAD, 0, get_const_double_index(expr->ins_value));
             //cout << "[LOAD] [NUMI] " << expr->ins_value << " at " << get_const_double_index(expr->ins_value) << endl;
             break;
         case ast_expr::type::object_chain:
@@ -324,6 +325,7 @@ private:
                 //cout << " " << expr->func_name << " at " << get_const_index(expr->func_name);
                 //cout << " [CALL] " << expr->args.size();
                 //cout << endl;
+                write_op(stream, opcode::WAIT_FUNC_CALL, 0, 0);
             }
             else
             {
@@ -332,6 +334,7 @@ private:
                 //cout << " " << expr->caller[0] << " at " << get_const_index(expr->caller[0]);
                 //cout << " [CALL] " << expr->args.size();
                 //cout << endl;
+                write_op(stream, opcode::WAIT_FUNC_CALL, 0, 0);
             }
 
             break;

@@ -49,6 +49,10 @@
         "ctime": "cpp",
         "unordered_set": "cpp",
         "locale": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "thread": "cpp",
+        "chrono": "cpp",
+        "list": "cpp",
+        "ratio": "cpp"
     }
 }

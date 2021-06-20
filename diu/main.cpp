@@ -13,7 +13,6 @@
 
 int main(int, char **)
 {
-
     lexer lex;
     auto tokens = lex.process_char_buff("test.diu", charset::utf8);
     shared_ptr<AST> ast = make_shared<AST>();
@@ -25,10 +24,10 @@ int main(int, char **)
     bytecode_reader br("test3.diuc");
     auto mod = br.readall();
     auto ce = make_shared<CodeEngine>();
-    ENGINE.codes = ce;
+    Engine::I->codes = ce;
 
     ce->modules[mod->module_name] = mod;
 
-    ENGINE.Run("test3.diuc", "Main", "main");
+    Engine::I->Run("test3.diuc", "Main", "main");
     return 0;
 }

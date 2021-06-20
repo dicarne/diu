@@ -7,7 +7,7 @@ enable_testing()
 
 add_executable(diu launcher/main.cpp)
 
-file(GLOB headers diu/*.h diu/*.hpp)
+file(GLOB headers diu/*.h diu/*.cpp diu/*.hpp )
 add_executable(diuexec diu/main.cpp ${headers})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

@@ -7,7 +7,7 @@
 #include "CodeFunc.hpp"
 using std::vector;
 using std::string;
-
+class CodeFunc;
 class CodeModule;
 class CodeNode
 {

@@ -22,20 +22,19 @@ private:
     char buffer[9];
 
 public:
+    double version;
     bytecode_reader(string path)
     {
         stream = std::ifstream(path, std::ios::binary);
-        stream.seekg(0, std::ios::end);
-        len = stream.tellg();
-        stream.seekg(0, std::ios::beg);
 
         auto magic = read<unsigned int>();
+        version = read<double>();
         if (magic != _DIU_MAGIC)
         {
             throw load_error("This is not diu file.");
         }
     }
-    int len;
+
     ~bytecode_reader() {}
 
     template <typename T>
@@ -50,7 +49,6 @@ public:
         auto mod = make_shared<CodeModule>();
         mod->module_name = path;
 
-        auto version = read<double>();
         mod->engine_version = version;
 
         auto const_count = read<int>();
@@ -132,6 +130,7 @@ public:
             {
                 auto funcptr = make_shared<CodeFunc>();
                 funcptr->node = nodeptr;
+                funcptr->mod = mod;
 
                 auto func_name_index = read<int>();
                 auto is_static = read<byte>();
