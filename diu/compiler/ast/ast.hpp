@@ -466,6 +466,7 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
         {
             auto start = fi;
             vector<string> name_chain;
+            string name = "";
             while ((*fi)->get_type() != token_types::op)
             {
                 auto unk_name = static_cast<token_name *>(*fi)->name;
@@ -475,6 +476,11 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                 {
                     fi++;
                 }
+            }
+            if (name_chain.size() == 1)
+            {
+                name = name_chain[0];
+                name_chain.clear();
             }
 
             if ((*fi)->get_type() == token_types::op)
@@ -490,6 +496,7 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                     let_assign->expr = get_next_expr(fi, func_body_tokens);
                     stat.statemen_type = ast_statement::type::assign;
                     let_assign->object_chain = name_chain;
+                    let_assign->name = name;
                     stat.assign = let_assign;
                     statements.push_back(stat);
                     continue;
@@ -695,7 +702,7 @@ shared_ptr<ast_expr> AST::maybe_binary(shared_ptr<ast_expr> left, int my_prec, s
         {
             return left;
         }
-        
+
         if (hisp->second > my_prec)
         {
             it++;

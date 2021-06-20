@@ -170,7 +170,7 @@ void FuncEnv::run(int &limit)
                 break;
                 case opcode::JUMP:
                 {
-                    cur += c.data;
+                    cur += short(c.data);
                 }
                 break;
                 case opcode::JUMP_NIF:

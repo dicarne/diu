@@ -151,7 +151,6 @@ private:
 
                 if (ass->name == "")
                 {
-
                     for (auto i = 0; i < ass->object_chain.size() - 1; i++)
                     {
                         if (i == 0)
@@ -247,14 +246,17 @@ private:
                     body_size -= op_size;
                     write_op(stream, opcode::JUMP_NIF, 0, (elif_bodys[i].size() / 4) + 1);
                     stream.write(elif_bodys[i].c_str(), elif_bodys[i].size());
-                    write_op(stream, opcode::JUMP, 0, body_size / 4);  // ok
+                    write_op(stream, opcode::JUMP, 0, body_size / 4); // ok
                 }
                 stream.write(else_body.c_str(), else_body.size());
             }
             if (ss->statemen_type == ast_statement::type::while_)
             {
-                run_expr(stream, ss->while_->cond);
-                auto body_size = 0;
+                stringstream sw;
+                run_expr(sw, ss->while_->cond);
+                auto se = sw.str();
+                stream.write(se.c_str(), se.size());
+                auto body_size = se.size();
                 body_size += op_size;
 
                 //cout << "[WHILE] [TOP]" << endl;
@@ -266,9 +268,9 @@ private:
                 // while (jump nif)
                 // ...
                 // jump back
-                write_op(stream, opcode::JUMP_NIF, 0, body_size / 4);
+                write_op(stream, opcode::JUMP_NIF, 0, (body_size - se.size() - 1) / 4);
                 stream.write(body.c_str(), body.size());
-                write_op(stream, opcode::JUMP, 0, -body_size / 4 + 1);
+                write_op(stream, opcode::JUMP, 0, -int(body_size) / 4);
             }
 
             //cout << "------------" << endl;

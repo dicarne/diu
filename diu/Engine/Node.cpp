@@ -75,7 +75,11 @@ void Node::run_once()
                 {
                     fw->second->handle_callback(*(cur_func->ret->copy()));
                 }
-                waitting_callback.erase(nodemsg->id);
+                else
+                {
+                    waitting_callback.erase(nodemsg->id);
+                }
+
                 delete nodemsg;
             }
             else
@@ -102,18 +106,18 @@ void Node::run_func(shared_ptr<FuncEnv> fr)
     run_env.push_back(fr);
 }
 
- void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_ptr<NodeMessage> msg)
+void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_ptr<NodeMessage> msg)
+{
+    auto chain = std::get<shared_ptr<vector<string>>>(symbol->value);
+    if (chain->size() == 1 && (*chain)[0] == "sys")
     {
-        auto chain = std::get<shared_ptr<vector<string>>>(symbol->value);
-        if (chain->size() == 1 && (*chain)[0] == "sys")
+        if (msg->name == "print")
         {
-            if (msg->name == "print")
-            {
-                std::cout << msg->args[0].to_string() << std::endl;
-            }
-            std::cout << msg->name << std::endl;
-            // TODO:
-            caller->waitting = false;
-            caller->ret = make_shared<Object>(0);
+            std::cout << msg->args[0].to_string() << std::endl;
         }
+        std::cout << msg->name << std::endl;
+        // TODO:
+        caller->waitting = false;
+        caller->ret = make_shared<Object>(0);
     }
+}

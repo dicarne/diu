@@ -1,22 +1,10 @@
 use sys
 node Main{
     fn main() {
-        let a = 0
-        if(1>a){
-            sys:print("D")
-        }
-        if(1>5){
-            sys:print("A")
-        }elif(100>220) {
-            sys:print("B")
-        }elif(1>0) {
-            sys:print("C")
-            let a = 0
-            if(1>a){
-                sys:print("D")
-            }
-        }else{
-            sys:print("FAIL!!!")
+        let a = 10
+        while(a>0) {
+            sys:print(a)
+            a=a-1
         }
     }
 
