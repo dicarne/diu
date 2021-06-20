@@ -568,6 +568,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
         throw compile_error("expr should be complete", (*it)->line_num);
     }
     auto expr = make_shared<ast_expr>();
+    expr->expr_type = ast_expr::type::expressions;
     if ((*it)->get_type() == token_types::name)
     {
         expr->expr_type = ast_expr::type::object_chain;
@@ -694,10 +695,12 @@ shared_ptr<ast_expr> AST::maybe_binary(shared_ptr<ast_expr> left, int my_prec, s
         {
             return left;
         }
+        
         if (hisp->second > my_prec)
         {
             it++;
             auto his = make_shared<ast_expr>();
+            his->expr_type = ast_expr::type::expressions;
             his->op = o->type;
             his->left = left;
             his->right = maybe_binary(get_next_expr(it, tokens), hisp->second, it, tokens);

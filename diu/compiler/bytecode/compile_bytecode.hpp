@@ -139,7 +139,7 @@ private:
                 {
                     if (ass->expr->expr_type == ast_expr::type::instance_num)
                     {
-                        write_op(stream, opcode::LOAD, 0, get_const_index(ass->expr->ins_value));
+                        write_op(stream, opcode::LOAD, 0, get_const_double_index(ass->expr->ins_value));
                         //cout << "[LOAD] to [NUMI] " << ass->expr->ins_value << " at " << get_const_double_index(ass->expr->ins_value) << endl;
                     }
                     if (ass->expr->expr_type == ast_expr::type::instance_string)
@@ -233,17 +233,21 @@ private:
                     //cout << "[ELSE] [END]" << endl;
                 }
                 // -------------------------
-                write_op(stream, opcode::JUMP_NIF, 0, body_size / 4);
+                write_op(stream, opcode::JUMP_NIF, 0, _next_elif / 4 - 1); // ok
                 stream.write(if_true_states.c_str(), if_true_states.size());
-                write_op(stream, opcode::JUMP, 0, _next_elif / 4);
+                write_op(stream, opcode::JUMP, 0, (body_size - _next_elif) / 4); // ok
+
+                body_size -= _next_elif;
                 for (auto i = 0; i < ss->if_->else_if->size(); i++)
                 {
                     stream.write(elif_conds[i].c_str(), elif_conds[i].size());
-                    _next_elif += elif_conds[i].size();
-                    _next_elif += op_size;
-                    write_op(stream, opcode::JUMP_NIF, 0, _next_elif / 4);
+                    body_size -= elif_conds[i].size();
+                    body_size -= op_size;
+                    body_size -= elif_bodys[i].size();
+                    body_size -= op_size;
+                    write_op(stream, opcode::JUMP_NIF, 0, (elif_bodys[i].size() / 4) + 1);
                     stream.write(elif_bodys[i].c_str(), elif_bodys[i].size());
-                    write_op(stream, opcode::JUMP, 0, body_size / 4);
+                    write_op(stream, opcode::JUMP, 0, body_size / 4);  // ok
                 }
                 stream.write(else_body.c_str(), else_body.size());
             }
