@@ -684,6 +684,12 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
         auto ii = inLb.begin();
         return get_next_expr(ii, inLb);
     }
+    else if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::sub_)
+    {
+        expr->expr_type = ast_expr::type::instance_num;
+        expr->ins_value = "0";
+        return maybe_binary(expr, 0, it, tokens);
+    }
 
     throw compile_error("can not get next expr", (*it)->line_num);
     return expr;
