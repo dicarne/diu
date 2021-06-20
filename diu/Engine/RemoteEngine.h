@@ -1,6 +1,6 @@
 #ifndef REMOTE_ENGINE_H_
 #define REMOTE_ENGINE_H_
-#endif
+
 class RemoteEngine
 {
 private:
@@ -10,10 +10,4 @@ public:
     ~RemoteEngine();
 };
 
-RemoteEngine::RemoteEngine(/* args */)
-{
-}
-
-RemoteEngine::~RemoteEngine()
-{
-}
+#endif

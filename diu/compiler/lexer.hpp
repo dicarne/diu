@@ -7,7 +7,7 @@
 #include <deque>
 #include <locale>
 #include <fstream>
-#include "compiler_type.hpp"
+#include "compiler_type.h"
 #include "token.hpp"
 #include "debug.hpp"
 

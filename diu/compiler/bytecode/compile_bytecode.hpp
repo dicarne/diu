@@ -341,7 +341,7 @@ private:
         case ast_expr::type::expressions:
             run_expr(stream, expr->left);
             run_expr(stream, expr->right);
-            write_op(stream, opcode::CALC_OP, char(op_type::add_), 0);
+            write_op(stream, opcode::CALC_OP, char(expr->op), 0);
             //cout << "[OP] ";
             /*
             switch (expr->op)

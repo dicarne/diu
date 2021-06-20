@@ -1,6 +1,6 @@
 #ifndef AST_ASSIGN_H_
 #define AST_ASSIGN_H_
-#include "../compiler_type.hpp"
+#include "../compiler_type.h"
 #include "ast_expr.hpp"
 #include <string>
 #include <vector>

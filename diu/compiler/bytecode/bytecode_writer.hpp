@@ -69,10 +69,10 @@ public:
     int write_const_double(string num)
     {
         const_count++;
-        tmp.str("");
-        tmp << num;
+        stringstream ss;
+        ss << num;
         double d;
-        tmp >> d;
+        ss >> d;
 
         write_const(const_value_type::DOUBLE);
         write_const(d);

@@ -11,9 +11,9 @@ enum class NodeMessageType {
 };
 struct NodeMessage
 {
-    NodeMessageType type;
-    string name;
-    int id;
+    NodeMessageType type = NodeMessageType::Call;
+    string name = "";
+    int id = 0;
     PID callbackNode;
     vector<Object> args;
 };

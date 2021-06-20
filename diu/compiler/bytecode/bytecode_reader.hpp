@@ -19,14 +19,14 @@ class bytecode_reader
 private:
     string path;
     std::ifstream stream;
-    char buffer[9];
+    char buffer[20];
 
 public:
     double version;
     bytecode_reader(string path)
     {
         stream = std::ifstream(path, std::ios::binary);
-
+        this->path = path;
         auto magic = read<unsigned int>();
         version = read<double>();
         if (magic != _DIU_MAGIC)
@@ -60,6 +60,7 @@ public:
         for (auto i = 0; i < const_count; i++)
         {
             auto const_type_ = const_value_type(read<byte>());
+            mod->const_type->push_back(byte(const_type_));
             switch (const_type_)
             {
             case const_value_type::DOUBLE:

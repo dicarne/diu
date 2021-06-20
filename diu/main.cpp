@@ -1,6 +1,6 @@
 #include <iostream>
-#include "Engine/Engine.hpp"
-#include "Engine/Node.hpp"
+#include "Engine/Engine.h"
+#include "Engine/Node.h"
 #include "Engine/Type.hpp"
 #include "compiler/lexer.hpp"
 #include <deque>
@@ -24,10 +24,12 @@ int main(int, char **)
     bytecode_reader br("test3.diuc");
     auto mod = br.readall();
     auto ce = make_shared<CodeEngine>();
-    Engine::I->codes = ce;
+    Engine e = Engine(ENGINE_VERSION);
+    e.codes = ce;
 
     ce->modules[mod->module_name] = mod;
 
-    Engine::I->Run("test3.diuc", "Main", "main");
+    e.Run("test3.diuc", "Main", "main");
+    e.RunCode();
     return 0;
 }

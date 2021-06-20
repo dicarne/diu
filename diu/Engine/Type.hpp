@@ -16,9 +16,9 @@ using std::vector;
 typedef unsigned long long int64;
 struct PID
 {
-    int engine;
-    int64 pid;
-    int server;
+    int engine = 0;
+    int64 pid = 0;
+    int server = 0;
     PID() : engine(-1), pid(-1) {}
     PID(int engine, int64 pid) : engine(engine), pid(pid)
     {

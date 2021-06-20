@@ -1,6 +1,6 @@
 #ifndef TOKEN_H_
 #define TOKEN_H_
-#include "compiler_type.hpp"
+#include "compiler_type.h"
 #include <string>
 #include <deque>
 using std::string;
