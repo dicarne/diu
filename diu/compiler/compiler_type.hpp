@@ -18,7 +18,7 @@ enum token_types
     name,
     keyword
 };
-enum class op_type
+enum class op_type : char
 {
     add_,
     addasi_,

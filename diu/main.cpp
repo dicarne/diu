@@ -11,9 +11,11 @@
 #include "compiler/bytecode/bytecode_reader.hpp"
 #include "compiler/bytecode/compile_bytecode.hpp"
 
+
 int main(int, char **)
 {
 
+    return 0;
     char buffer[100];
     std::deque<char> buffer_q;
     std::ifstream file("test.txt");
@@ -30,8 +32,11 @@ int main(int, char **)
     shared_ptr<AST> ast = make_shared<AST>();
     ast->build_ast_from_tokens(tokens);
 
-    compile_bytecode compiler(ast, "test.diuc");
+    compile_bytecode compiler(ast, "test3.diuc");
     compiler.run();
+
+    bytecode_reader br("test3.diuc");
+    br.readall();
     //bytecode_reader br("test.diuc");
     //br.readall();
     return 0;

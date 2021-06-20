@@ -211,7 +211,6 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                 }
                 if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::llb_)
                 {
-                    token_base::dump_tokens("[before build node ast]", tokens);
                     auto node = build_node_ast(get_tokens_in_next(op_type::llb_, op_type::lrb_, it, tokens));
                     node.node_name = nodename;
                     nodes[nodename] = node;
@@ -268,7 +267,6 @@ ast_node AST::build_node_ast(deque<token_base *> tokens)
 
 ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<token_base *> &tokens)
 {
-    token_base::dump_tokens("[in build node func]", tokens);
     ast_func fun;
     if ((*it)->get_type() != token_types::name)
     {
@@ -331,6 +329,15 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
     }
     auto func_body_tokens = get_tokens_in_next(op_type::llb_, op_type::lrb_, it, tokens);
     build_statements(fun.statements, func_body_tokens);
+    if (fun.statements[fun.statements.size() - 1].statemen_type != ast_statement::type::ret)
+    {
+        ast_statement ret;
+        ret.statemen_type = ast_statement::type::ret;
+        ret.expr = make_shared<ast_expr>();
+        ret.expr->expr_type = ast_expr::type::instance_num;
+        ret.expr->ins_value = "0";
+        fun.statements.push_back(ret);
+    }
     return fun;
 }
 
@@ -565,12 +572,12 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
     {
         expr->expr_type = ast_expr::type::object_chain;
         expr->caller.push_back(static_cast<token_name *>(*it)->name);
+        it++;
 
         // handle a.b.c
         // handle a.b.c:f
         while (it != tokens.end())
         {
-            it++;
             if ((*it)->get_type() == token_types::op)
             {
                 auto sit = static_cast<token_op *>(*it);
@@ -580,6 +587,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
                     if ((*it)->get_type() == token_types::name)
                     {
                         expr->caller.push_back(static_cast<token_name *>(*it)->name);
+                        it++;
                         continue;
                     }
                     else
@@ -606,7 +614,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
             break;
         }
 
-        if (expr->caller.size() == 1)
+        if (it != tokens.end() && expr->caller.size() == 1)
         {
             auto t = (*it)->get_type();
             auto s = static_cast<token_op *>(*it)->type;

@@ -1,12 +1,12 @@
 use sys
 node Main{
-    fn main() {
+    fn main(k: num) {
         let b = "HELLO"
         let a = 1 + 2 * (3 - 1) / add(2.4, 4)
         if(a>0){
              sys:print(a)
         }elif(a<0){
-
+            e.f = 6
         }else{
 
         }
@@ -16,6 +16,6 @@ node Main{
     }
 
     fn add(a: int, b: int) {
-        return a + b
+        return a + b.v
     }
 }
