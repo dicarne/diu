@@ -139,7 +139,7 @@ void FuncEnv::run(int &limit)
                 case opcode::FUNC_CALL_BY_NAME:
                 {
                     auto name = (*env->const_string)[c.data];
-                    auto argcount = int((*env->const_double)[c.info]);
+                    auto argcount = int(c.info);
                     auto lastsymbol = runtime.top();
                     runtime.pop();
                     stack<shared_ptr<Object>> st;
@@ -253,6 +253,46 @@ void FuncEnv::run(int &limit)
                         auto a = runtime.top();
                         runtime.pop();
                         auto c = Object::neq(this, a, b);
+                        runtime.push(c);
+                    }
+                    break;
+                    case op_type::le_:
+                    {
+                        auto b = runtime.top();
+                        runtime.pop();
+                        auto a = runtime.top();
+                        runtime.pop();
+                        auto c = Object::le(this, a, b);
+                        runtime.push(c);
+                    }
+                    break;
+                    case op_type::lt_:
+                    {
+                        auto b = runtime.top();
+                        runtime.pop();
+                        auto a = runtime.top();
+                        runtime.pop();
+                        auto c = Object::lt(this, a, b);
+                        runtime.push(c);
+                    }
+                    break;
+                    case op_type::ge_:
+                    {
+                        auto b = runtime.top();
+                        runtime.pop();
+                        auto a = runtime.top();
+                        runtime.pop();
+                        auto c = Object::ge(this, a, b);
+                        runtime.push(c);
+                    }
+                    break;
+                    case op_type::gt_:
+                    {
+                        auto b = runtime.top();
+                        runtime.pop();
+                        auto a = runtime.top();
+                        runtime.pop();
+                        auto c = Object::gt(this, a, b);
                         runtime.push(c);
                     }
                     break;

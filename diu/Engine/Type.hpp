@@ -5,11 +5,12 @@
 #include <vector>
 #include <memory>
 #include <variant>
+#include <sstream>
 #include "runtime_error.hpp"
-
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
+using std::stringstream;
 using std::unordered_map;
 using std::variant;
 using std::vector;
@@ -220,6 +221,55 @@ public:
         return true;
     }
 
+    string to_string()
+    {
+        stringstream ss;
+        switch (type)
+        {
+        case ObjectRawType::Num:
+        {
+            auto v = std::get<double>(value);
+            ss << v;
+        }
+        break;
+        case ObjectRawType::Bool:
+        {
+            auto v = std::get<double>(value);
+            ss << v;
+        }
+        break;
+        case ObjectRawType::Str:
+        {
+            auto v = std::get<string>(value);
+            ss << v;
+        }
+        break;
+        case ObjectRawType::Pid:
+        {
+            auto v = std::get<PID>(value);
+            ss << "[PID] " << v.pid << "  server: " << v.server;
+        }
+        break;
+        case ObjectRawType::Struct:
+        {
+            ss << "[STRUCT]";
+        }
+        break;
+        case ObjectRawType::TypeSymbol:
+        {
+            auto symbols = std::get<shared_ptr<vector<string>>>(value);
+            for (auto &s : *symbols)
+            {
+                ss << s << ".";
+            }
+        }
+        break;
+        default:
+            break;
+        }
+        return ss.str();
+    }
+
     shared_ptr<Object> get_child(string name)
     {
         if (type != ObjectRawType::Struct)
@@ -288,7 +338,7 @@ public:
     {
         if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
         {
-            return make_shared<Object>(int(std::get<double>(a->value)) % int(std::get<double>(b->value)));
+            return make_shared<Object>(double(int(std::get<double>(a->value)) % int(std::get<double>(b->value))));
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
@@ -297,11 +347,11 @@ public:
     {
         if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
         {
-            return make_shared<Object>(std::get<double>(a->value) == std::get<double>(b->value));
+            return make_shared<Object>(double(std::get<double>(a->value) == std::get<double>(b->value) ? 1 : 0));
         }
         if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
         {
-            return make_shared<Object>(std::get<string>(a->value) == std::get<string>(b->value));
+            return make_shared<Object>(double(std::get<string>(a->value) == std::get<string>(b->value) ? 1 : 0));
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
@@ -310,11 +360,63 @@ public:
     {
         if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
         {
-            return make_shared<Object>(std::get<double>(a->value) != std::get<double>(b->value));
+            return make_shared<Object>(double(std::get<double>(a->value) != std::get<double>(b->value) ? 1 : 0));
         }
         if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
         {
-            return make_shared<Object>(std::get<string>(a->value) != std::get<string>(b->value));
+            return make_shared<Object>(double(std::get<string>(a->value) != std::get<string>(b->value) ? 1 : 0));
+        }
+        throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
+        return make_shared<Object>(0);
+    }
+    static shared_ptr<Object> le(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    {
+        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        {
+            return make_shared<Object>(double(std::get<double>(a->value) <= std::get<double>(b->value) ? 1 : 0));
+        }
+        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        {
+            return make_shared<Object>(double(std::get<string>(a->value) <= std::get<string>(b->value) ? 1 : 0));
+        }
+        throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
+        return make_shared<Object>(0);
+    }
+    static shared_ptr<Object> lt(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    {
+        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        {
+            return make_shared<Object>(double(std::get<double>(a->value) < std::get<double>(b->value) ? 1 : 0));
+        }
+        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        {
+            return make_shared<Object>(double(std::get<string>(a->value) < std::get<string>(b->value) ? 1 : 0));
+        }
+        throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
+        return make_shared<Object>(0);
+    }
+    static shared_ptr<Object> ge(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    {
+        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        {
+            return make_shared<Object>(double(std::get<double>(a->value) >= std::get<double>(b->value) ? 1 : 0));
+        }
+        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        {
+            return make_shared<Object>(double(std::get<string>(a->value) >= std::get<string>(b->value) ? 1 : 0));
+        }
+        throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
+        return make_shared<Object>(0);
+    }
+    static shared_ptr<Object> gt(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    {
+        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        {
+            return make_shared<Object>(double(std::get<double>(a->value) > std::get<double>(b->value) ? 1 : 0));
+        }
+        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        {
+            return make_shared<Object>(double(std::get<string>(a->value) > std::get<string>(b->value) ? 1 : 0));
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);

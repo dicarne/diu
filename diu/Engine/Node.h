@@ -59,11 +59,7 @@ public:
         waitting_callback[msg->id] = caller;
         run_func(f);
     }
-    void call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_ptr<NodeMessage> msg)
-    {
-        std::cout << msg->name << std::endl;
-        // TODO:
-    }
+    void call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_ptr<NodeMessage> msg);
 };
 
 #endif

@@ -4,6 +4,7 @@
 Node::Node()
 {
     messageBox = new LockFreeArrayQueue<NodeMessage *>(100);
+    handle_message = true;
 }
 
 Node::~Node()
@@ -100,3 +101,19 @@ void Node::run_func(shared_ptr<FuncEnv> fr)
 {
     run_env.push_back(fr);
 }
+
+ void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_ptr<NodeMessage> msg)
+    {
+        auto chain = std::get<shared_ptr<vector<string>>>(symbol->value);
+        if (chain->size() == 1 && (*chain)[0] == "sys")
+        {
+            if (msg->name == "print")
+            {
+                std::cout << msg->args[0].to_string() << std::endl;
+            }
+            std::cout << msg->name << std::endl;
+            // TODO:
+            caller->waitting = false;
+            caller->ret = make_shared<Object>(0);
+        }
+    }

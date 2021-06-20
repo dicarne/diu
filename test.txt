@@ -1,8 +1,10 @@
 use sys
 node Main{
     fn main() {
-        if(1>0){
+        if(1>5){
             sys:print("hello")
+        }elif(1>0) {
+            sys:print("world")
         }
     }
 
