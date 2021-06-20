@@ -1,0 +1,17 @@
+from "./another" use {n1}
+node Main{
+    fn main() {
+        let a = sys:PID()
+        sys:print(a)
+    }
+
+    fn add(a: int, b: int) {
+        return a + b
+    }
+}
+
+node A2 {
+    fn Hello() {
+        sys:print("HELLO")
+    }
+}

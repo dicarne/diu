@@ -329,7 +329,7 @@ ast_func AST::build_node_func(std::deque<token_base *>::iterator &it, deque<toke
     }
     auto func_body_tokens = get_tokens_in_next(op_type::llb_, op_type::lrb_, it, tokens);
     build_statements(fun.statements, func_body_tokens);
-    if (fun.statements[fun.statements.size() - 1].statemen_type != ast_statement::type::ret)
+    if (fun.statements.size() == 0 || fun.statements[fun.statements.size() - 1].statemen_type != ast_statement::type::ret)
     {
         ast_statement ret;
         ret.statemen_type = ast_statement::type::ret;

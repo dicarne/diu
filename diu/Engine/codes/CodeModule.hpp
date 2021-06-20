@@ -5,10 +5,10 @@
 #include <string>
 #include "CodeNode.hpp"
 #include "../../compiler/bytecode/op_code.hpp"
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::vector;
-using std::shared_ptr;
 
 class CodeNode;
 class CodeModule
@@ -25,6 +25,7 @@ public:
     shared_ptr<vector<byte>> const_type;
     shared_ptr<unordered_map<int, string>> const_string;
     shared_ptr<vector<int>> package_index_map;
-    shared_ptr<unordered_map<int,int>> outer_symbol_pkg_map;
+    shared_ptr<unordered_map<int, int>> outer_symbol_pkg_index_map;
+    shared_ptr<unordered_map<string, string>> outer_symbol_pkg_map;
 };
 #endif

@@ -147,6 +147,10 @@ public:
         this->type = ObjectRawType::Num;
         value = double(d);
     }
+    Object(PID pid) {
+        this->type = ObjectRawType::Pid;
+        value = pid;
+    }
     Object(string str)
     {
         this->type = ObjectRawType::Str;

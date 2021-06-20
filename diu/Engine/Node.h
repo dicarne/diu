@@ -52,13 +52,9 @@ public:
 
     void run_once();
 
-    void call_another_func(FuncEnv *caller, shared_ptr<NodeMessage> msg)
-    {
-        // Local Call
-        auto f = create_func(msg);
-        waitting_callback[msg->id] = caller;
-        run_func(f);
-    }
+    // Local
+    void call_another_func(FuncEnv *caller, shared_ptr<NodeMessage> msg);
+    // Remote
     void call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_ptr<NodeMessage> msg);
 };
 

@@ -185,7 +185,7 @@ lexer::~lexer()
 std::deque<token_base *> lexer::process_char_buff(string filepath, charset encoding)
 {
     std::deque<char> buffer_q;
-    std::ifstream file("test.txt");
+    std::ifstream file(filepath);
     while (!file.eof())
     {
         auto c = file.get();
@@ -225,6 +225,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
     unordered_map<std::ptrdiff_t, int> nextlines;
     for (auto it = buff.begin(); it != buff.end();)
     {
+        //cout << *it << endl;
         if (*it == '\n')
         {
             auto l = it - buff.begin();
@@ -259,7 +260,8 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                 {
                     insideStr = false;
                     // REVIEW: ADD NEW ITER TOKEN
-                    if(show_debug) DEBUG_LOG2("STRING\t\t", tmp);
+                    if (show_debug)
+                        DEBUG_LOG2("STRING\t\t", tmp);
                     tokens.push_back(new token_string(cvt->wide2local(tmp), line_num));
                     tmp.clear();
                     it++;
@@ -354,7 +356,8 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
                 else
                 {
                     // REVIEW: MAKE SIGNAL TOKEN
-                    if(show_debug) DEBUG_LOG2("OP\t\t", tmp);
+                    if (show_debug)
+                        DEBUG_LOG2("OP\t\t", tmp);
                     auto find_op = compiler_type::op_map.find(cvt->wide2local(tmp));
                     if (find_op != compiler_type::op_map.end())
                     {
@@ -394,7 +397,8 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             if (*it == '\n' || *it == -1)
             {
                 type = token_types::none;
-                if(show_debug) DEBUG_LOG2("COMMENT\t\t", tmp);
+                if (show_debug)
+                    DEBUG_LOG2("COMMENT\t\t", tmp);
                 tmp.clear();
                 continue;
             }
@@ -427,7 +431,8 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             {
                 type = token_types::none;
                 // REVIEW: MAKE NAME TOKEN
-                if(show_debug) DEBUG_LOG2("NAME\t\t", tmp);
+                if (show_debug)
+                    DEBUG_LOG2("NAME\t\t", tmp);
                 auto name_str = cvt->wide2local(tmp);
                 auto find_keyword = compiler_type::keyword_map.find(name_str);
                 if (find_keyword != compiler_type::keyword_map.end())
@@ -454,7 +459,8 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
         // end file
         if (!compiler_type::isempty(*it))
         {
-            if(show_debug) DEBUG_ERROR(*it);
+            if (show_debug)
+                DEBUG_ERROR(*it);
         }
         it++;
     }

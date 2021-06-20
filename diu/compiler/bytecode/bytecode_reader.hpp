@@ -105,13 +105,16 @@ public:
         }
         cout << "-----[SYMBOL]-----" << endl;
 
-        mod->outer_symbol_pkg_map = make_shared<unordered_map<int, int>>();
+        mod->outer_symbol_pkg_index_map = make_shared<unordered_map<int, int>>();
+        mod->outer_symbol_pkg_map = make_shared<unordered_map<string, string>>();
+
         auto symbol_count = read<int>();
         for (auto i = 0; i < symbol_count; i++)
         {
             auto symbol_name_index = read<int>();
             auto package_index = read<int>();
-            (*mod->outer_symbol_pkg_map)[symbol_name_index] = package_index;
+            (*mod->outer_symbol_pkg_index_map)[symbol_name_index] = package_index;
+            (*mod->outer_symbol_pkg_map)[(*mod->const_string)[symbol_name_index]] = (*mod->const_string)[package_index];
 
             cout << (*mod->const_string)[symbol_name_index] << " : " << (*mod->const_string)[(*mod->package_index_map)[package_index]] << endl;
         }
@@ -166,49 +169,49 @@ public:
                     switch (op)
                     {
                     case opcode::LET:
-                        cout << "LET\t\t\t" << 0 << " " << 0 << endl;
+                        cout << "LET\t\t\t" << 0 << "\t " << 0 << endl;
                         break;
                     case opcode::LET_C:
-                        cout << "LET_C\t\t\t" << 0 << " " << 0 << endl;
+                        cout << "LET_C\t\t\t" << 0 << "\t " << 0 << endl;
                         break;
                     case opcode::VAR:
-                        cout << "VAR\t\t\t" << 0 << " " << (*mod->const_string)[cmd] << endl;
+                        cout << "VAR\t\t\t" << 0 << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
                     case opcode::LOAD:
-                        cout << "LOAD\t\t\t" << 0 << " " << (*mod->const_string)[cmd] << endl;
+                        cout << "LOAD\t\t\t" << 0 << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
                     case opcode::VAR_FIND:
-                        cout << "VAR_FIND\t\t" << 0 << " " << (*mod->const_string)[cmd] << endl;
+                        cout << "VAR_FIND\t\t" << 0 << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
                     case opcode::VAR_FIND_C:
-                        cout << "VAR_FIND_C\t\t" << 0 << " " << (*mod->const_string)[cmd] << endl;
+                        cout << "VAR_FIND_C\t\t" << 0 << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
                     case opcode::FUNC_CALL_LOCAL:
-                        cout << "FUNC_CALL_LOCAL\t\t" << info << " " << (*mod->const_string)[cmd] << endl;
+                        cout << "FUNC_CALL_LOCAL\t\t" << info << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
                     case opcode::FUNC_CALL_BY_NAME:
-                        cout << "FUNC_CALL_BY_NAME\t" << info << " " << (*mod->const_string)[cmd] << endl;
+                        cout << "FUNC_CALL_BY_NAME\t" << info << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
                     case opcode::RETURN:
                         cout << "RETURN\t\t" << endl;
                         break;
                     case opcode::CALC_OP:
                         cout << "CALC_OP\t\t\t"
-                             << "-"
+                             << "-\t"
                              << " " << 0 << endl;
                         break;
                     case opcode::JUMP:
-                        cout << "JUMP\t\t\t" << 0 << " " << cmd << endl;
+                        cout << "JUMP\t\t\t" << 0 << "\t " << cmd << endl;
                         break;
                     case opcode::JUMP_NIF:
-                        cout << "JUMP_NIF\t\t" << 0 << " " << cmd << endl;
+                        cout << "JUMP_NIF\t\t" << 0 << "\t " << cmd << endl;
                         break;
                     case opcode::WAIT_FUNC_CALL:
-                        cout << "WAIT_FUNC_CALL\t" << 0 << " " << cmd << endl;
+                        cout << "WAIT_FUNC_CALL\t\t" << 0 << "\t " << cmd << endl;
                         break;
                     default:
                         cout << "??\t\t\t"
-                             << " " << int(op) << " " << (int)info << " " << (int)cmd << endl;
+                             << " " << int(op) << "\t " << (int)info << " " << (int)cmd << endl;
                         break;
                     }
                 }

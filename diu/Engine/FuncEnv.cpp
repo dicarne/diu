@@ -308,7 +308,8 @@ void FuncEnv::run(int &limit)
                         return;
                     else
                     {
-                        //TODO: 将函数返回值压入栈
+                        // 将函数返回值压入栈
+                        runtime.push(ret);
                     }
                 }
                 break;

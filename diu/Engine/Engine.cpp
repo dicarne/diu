@@ -11,7 +11,8 @@ Engine::~Engine()
 
 void Engine::AddNewNode(shared_ptr<Node> node)
 {
-    node->Pid = PID(version, node_index++);
+    node_index++;
+    node->Pid = PID(version, node_index);
     nodes[node->Pid.pid] = node;
 }
 
@@ -25,6 +26,7 @@ shared_ptr<Node> Engine::NewNode(string mod, string node_name)
         throw runtime_error("can't find node " + node_name + " in module " + mod);
     auto node = make_shared<Node>();
     AddNewNode(node);
+    node->engine = this;
     node->load_code(codenode->second);
     node->init();
     return node;
@@ -39,7 +41,16 @@ void Engine::Run(string mod, string node, string func)
     m.callbackNode = PID(0, 0);
     nodei->direct_call(m);
 }
-
+void Engine::Run(string mod, string node, string func, shared_ptr<NodeMessage> message)
+{
+    auto nodei = NewNode(mod, node);
+    NodeMessage m;
+    m.name = message->name;
+    m.id = message->id;
+    m.callbackNode = message->callbackNode;
+    m.args = message->args;
+    nodei->direct_call(m);
+}
 void Engine::SendMessage(NodeMessage *msg)
 {
     auto cb = msg->callbackNode;

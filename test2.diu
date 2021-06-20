@@ -1,0 +1,6 @@
+use sys
+node n1{
+    fn func() {
+        sys:print("YES!")
+    }
+}

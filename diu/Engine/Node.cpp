@@ -116,15 +116,83 @@ void Node::run_func(shared_ptr<FuncEnv> fr)
 void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_ptr<NodeMessage> msg)
 {
     auto chain = std::get<shared_ptr<vector<string>>>(symbol->value);
+    msg->callbackNode = Pid;
     if (chain->size() == 1 && (*chain)[0] == "sys")
     {
         if (msg->name == "print")
         {
             std::cout << msg->args[0].to_string() << std::endl;
         }
-        std::cout << msg->name << std::endl;
-        // TODO:
+        if (msg->name == "PID")
+        {
+            caller->waitting = false;
+            caller->ret = make_shared<Object>(Pid);
+            return;
+        }
         caller->waitting = false;
         caller->ret = make_shared<Object>(0);
+        return;
     }
+    if (chain->size() == 1)
+    {
+        if (!caller->code->mod.expired())
+        {
+            auto mod = caller->code->mod.lock();
+            auto another_node = mod->nodes->find((*chain)[0]);
+            if (another_node != mod->nodes->end())
+            {
+                waitting_callback[msg->id] = caller;
+                engine->Run(mod->module_name, (*chain)[0], msg->name, msg);
+                return;
+            }
+            else
+            {
+                auto pkg = mod->outer_symbol_pkg_map->find((*chain)[0]);
+                if (pkg != mod->outer_symbol_pkg_map->end())
+                {
+                    auto pkgname = pkg->second;
+                    chain->insert(chain->begin(), pkgname);
+                }
+                else
+                {
+                    throw runtime_error("Remote call error here");
+                }
+            }
+        }
+    }
+    if (chain->size() == 2)
+    {
+        waitting_callback[msg->id] = caller;
+        if (!caller->code->mod.expired())
+        {
+            auto mod = caller->code->mod.lock();
+            auto pkg = (*chain)[0];
+
+            auto modules = engine->codes->modules;
+            auto fmod = modules.find(pkg);
+            if (fmod != modules.end())
+            {
+                engine->Run(pkg, (*chain)[1], msg->name, msg);
+                return;
+            }
+            else
+            {
+                throw runtime_error("Can't find module pkg: " + pkg);
+            }
+        }
+    }
+}
+void Node::call_another_func(FuncEnv *caller, shared_ptr<NodeMessage> msg)
+{
+
+    // auto fun = msg->name;
+    // auto ff= code_page->funcs.find(fun);
+    // if(ff==code_page->funcs.end()){
+    //     // Remote call
+    //     call_another_func(caller, )
+    // }
+    // Local Call
+    auto f = create_func(msg);
+    waitting_callback[msg->id] = caller;
+    run_func(f);
 }
