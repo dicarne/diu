@@ -53,13 +53,19 @@ void Node::run_once()
             }
         }
     }
+    list<shared_ptr<FuncEnv>> waitting;
     while (this_cycle_cmd_count > 0 && !run_env.empty())
     {
         auto cur_func = run_env.front();
         run_env.pop_front();
         cur_func->run(this_cycle_cmd_count);
         if (!cur_func->completed)
-            run_env.push_back(cur_func);
+        {
+            if (cur_func->waitting)
+                waitting.push_back(cur_func);
+            else
+                run_env.push_back(cur_func);
+        }
         else
         {
             auto nodemsg = new NodeMessage();
@@ -86,6 +92,7 @@ void Node::run_once()
                 engine->SendMessage(nodemsg);
         }
     }
+    run_env.splice(run_env.begin(), waitting);
 }
 shared_ptr<FuncEnv> Node::create_func(shared_ptr<NodeMessage> p)
 {
