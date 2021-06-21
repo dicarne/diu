@@ -35,10 +35,10 @@ shared_ptr<Node> Engine::NewNode(string mod, string node_name)
     return node;
 }
 
-void Engine::Run(string mod, string node, string func)
+void Engine::Run(string mod, string node, string func, bool noreply)
 {
     auto nodei = NewNode(mod, node);
-    NodeMessage m;
+    NodeMessage m(NodeMessageType::Call, func, 0, PID(0, 0), noreply);
     m.name = func;
     m.id = 0;
     m.callbackNode = PID(0, 0);
@@ -46,16 +46,9 @@ void Engine::Run(string mod, string node, string func)
 }
 void Engine::Run(string mod, string node, string func, shared_ptr<NodeMessage> message)
 {
-
     if (message->name == "new")
     {
         auto nodei = NewNode(mod, node);
-        auto reply = new NodeMessage();
-        reply->type = NodeMessageType::Callback;
-        reply->id = message->id;
-        reply->callbackNode = message->callbackNode;
-        reply->name = message->name;
-        reply->args.push_back(Object(nodei->Pid));
         Run(nodei->Pid, message);
     }
     else
@@ -80,10 +73,7 @@ void Engine::Run(string mod, string node, string func, shared_ptr<NodeMessage> m
             module_collection[node] = NewNode(mod, node);
         }
         auto n = node_static_f != module_collection.end() ? node_static_f->second : module_collection[node];
-        NodeMessage m;
-        m.name = message->name;
-        m.id = message->id;
-        m.callbackNode = message->callbackNode;
+        NodeMessage m(NodeMessageType::Call, message->name, message->id, message->callbackNode, message->noreply);
         m.args = message->args;
         n->direct_call(m);
     }
@@ -94,11 +84,7 @@ void Engine::Run(PID node, shared_ptr<NodeMessage> msg)
     auto find_n = nodes.find(node.pid);
     if (find_n != nodes.end())
     {
-        auto reply = new NodeMessage();
-        reply->type = NodeMessageType::Call;
-        reply->id = msg->id;
-        reply->callbackNode = msg->callbackNode;
-        reply->name = msg->name;
+        auto reply = new NodeMessage(NodeMessageType::Call, msg->name, msg->id, msg->callbackNode, msg->noreply);
         reply->args = msg->args;
         find_n->second->push_massage(reply);
     }

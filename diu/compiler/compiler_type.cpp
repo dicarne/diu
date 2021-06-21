@@ -90,4 +90,5 @@ const unordered_map<std::string, keyword_type> compiler_type::keyword_map = {
     {"else", keyword_type::else_},
     {"while", keyword_type::while_},
     {"engine", keyword_type::engine_},
-    {"module", keyword_type::moudle_}};
+    {"module", keyword_type::moudle_},
+    {"run", keyword_type::run_}};

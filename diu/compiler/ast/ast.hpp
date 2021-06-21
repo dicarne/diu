@@ -372,6 +372,7 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
 
     for (auto fi = func_body_tokens.begin(); fi != func_body_tokens.end();)
     {
+        bool RUN_FUNC_FLAG = false;
         if ((*fi)->get_type() == token_types::keyword)
         {
             auto token = static_cast<token_keyword *>(*fi);
@@ -480,6 +481,12 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                 statements.push_back(stat);
                 continue;
             }
+            else if (token->type == keyword_type::run_)
+            {
+                fi++;
+                RUN_FUNC_FLAG = true;
+                goto BgeinFuncCall;
+            }
             else
             {
                 // Another keywords
@@ -488,6 +495,7 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
         }
         if ((*fi)->get_type() == token_types::name)
         {
+        BgeinFuncCall:
             auto start = fi;
             vector<string> name_chain;
             string name = "";
@@ -531,6 +539,10 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                     fi = start;
                     ast_statement stat;
                     auto expr = get_next_expr(fi, func_body_tokens);
+                    if (RUN_FUNC_FLAG)
+                    {
+                        expr->expr_type = ast_expr::type::func_call_run;
+                    }
                     stat.statemen_type = ast_statement::type::expr;
                     stat.expr = expr;
                     statements.push_back(stat);
@@ -658,7 +670,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
         }
 
         // handle func call
-        if (expr->expr_type == ast_expr::type::func_call)
+        if (expr->expr_type == ast_expr::type::func_call || expr->expr_type == ast_expr::type::func_call_run)
         {
             it++;
             auto type = (*it)->get_type();

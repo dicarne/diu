@@ -3,9 +3,14 @@ use you
 
 node Main {             // 声明一个节点
     fn main() {         // 声明一个函数
+        run haha(5)
+        you.n1:func2()
+    }
+    fn haha(c: num) {
         you.n1:func()
-        you.n1:func()
-        you.n1:func()
-        you.n1:func()
+        if(c>0){
+            haha(c-1)
+        }
+        
     }
 }

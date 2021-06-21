@@ -25,13 +25,14 @@ class FuncEnv
 private:
     stack<shared_ptr<Object>> runtime;
 
-    void call_another_func(string name, vector<Object> args);
-    void call_another_func(shared_ptr<Object> symbol, string name, vector<Object> args);
+    void call_another_func(string name, vector<Object> args, bool noreply);
+    void call_another_func(shared_ptr<Object> symbol, string name, vector<Object> args, bool noreply);
 
 public:
     bool completed;
     bool failed;
     bool waitting;
+    bool noreply;
     shared_ptr<CodeFunc> code;
     unordered_map<string, shared_ptr<Object>> local_var;
     shared_ptr<Object> ret;

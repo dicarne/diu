@@ -21,6 +21,7 @@ public:
         instance_num,
         instance_string,
         func_call,
+        func_call_run,
         object_chain
     };
     string ins_value;

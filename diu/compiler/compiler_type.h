@@ -77,7 +77,8 @@ enum class keyword_type
     else_,
     while_,
     engine_,
-    moudle_
+    moudle_,
+    run_
 };
 
 class compiler_type

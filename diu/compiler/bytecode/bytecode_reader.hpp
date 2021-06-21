@@ -207,6 +207,12 @@ public:
                     case opcode::FUNC_CALL_BY_NAME:
                         cout << "FUNC_CALL_BY_NAME\t" << info << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
+                    case opcode::FUNC_CALL_LOCAL_RUN:
+                        cout << "FUNC_CALL_LOCAL_RUN\t\t" << info << "\t " << (*mod->const_string)[cmd] << endl;
+                        break;
+                    case opcode::FUNC_CALL_BY_NAME_RUN:
+                        cout << "FUNC_CALL_BY_NAME_RUN\t" << info << "\t " << (*mod->const_string)[cmd] << endl;
+                        break;
                     case opcode::RETURN:
                         cout << "RETURN\t\t" << endl;
                         break;

@@ -304,6 +304,7 @@ private:
                 }
             }
             break;
+        case ast_expr::type::func_call_run:
         case ast_expr::type::func_call:
             for (auto i = expr->args.begin(); i != expr->args.end(); i++)
             {
@@ -324,21 +325,23 @@ private:
                         //cout << "[VAR_FIND_C]" << expr->caller[i] << " at " << get_const_index(expr->caller[i]) << endl;
                     }
                 }
-                write_op(stream, opcode::FUNC_CALL_BY_NAME, expr->args.size(), get_const_index(expr->func_name));
-                //cout << "[FUNC_REMOTE] ";
-                //cout << " " << expr->func_name << " at " << get_const_index(expr->func_name);
-                //cout << " [CALL] " << expr->args.size();
-                //cout << endl;
-                write_op(stream, opcode::WAIT_FUNC_CALL, 0, 0);
+                if (expr->expr_type == ast_expr::type::func_call)
+                {
+                    write_op(stream, opcode::FUNC_CALL_BY_NAME, expr->args.size(), get_const_index(expr->func_name));
+                    write_op(stream, opcode::WAIT_FUNC_CALL, 0, 0);
+                }else{
+                    write_op(stream, opcode::FUNC_CALL_BY_NAME_RUN, expr->args.size(), get_const_index(expr->func_name));
+                }
             }
             else
             {
-                write_op(stream, opcode::FUNC_CALL_LOCAL, expr->args.size(), get_const_index(expr->caller[0]));
-                //cout << "[FUNC_LOCAL] ";
-                //cout << " " << expr->caller[0] << " at " << get_const_index(expr->caller[0]);
-                //cout << " [CALL] " << expr->args.size();
-                //cout << endl;
-                write_op(stream, opcode::WAIT_FUNC_CALL, 0, 0);
+                if (expr->expr_type == ast_expr::type::func_call)
+                {
+                    write_op(stream, opcode::FUNC_CALL_LOCAL, expr->args.size(), get_const_index(expr->caller[0]));
+                    write_op(stream, opcode::WAIT_FUNC_CALL, 0, 0);
+                }else{write_op(stream, opcode::FUNC_CALL_LOCAL_RUN, expr->args.size(), get_const_index(expr->caller[0]));
+                    
+                }
             }
 
             break;

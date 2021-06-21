@@ -3,4 +3,7 @@ node n1{
     static fn func() {
         sys:print("YES!")
     }
+    static fn func2() {
+        sys:print("NO!")
+    }
 }

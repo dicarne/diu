@@ -1,20 +1,17 @@
 #include "FuncEnv.h"
-void FuncEnv::call_another_func(string name, vector<Object> args)
+void FuncEnv::call_another_func(string name, vector<Object> args, bool noreply)
 {
-    waitting = true;
-    auto m = make_shared<NodeMessage>();
-    m->name = name;
-    m->id = id;
-    m->callbackNode = PID(0, 0);
+    if (!noreply)
+        waitting = true;
+    auto m = make_shared<NodeMessage>(NodeMessageType::Call, name, id, PID(0, 0), noreply);
     m->args = args;
     node->call_another_func(this, m);
 }
-void FuncEnv::call_another_func(shared_ptr<Object> symbol, string name, vector<Object> args)
+void FuncEnv::call_another_func(shared_ptr<Object> symbol, string name, vector<Object> args, bool noreply)
 {
-    waitting = true;
-    auto m = make_shared<NodeMessage>();
-    m->name = name;
-    m->id = id;
+    if (!noreply)
+        waitting = true;
+    auto m = make_shared<NodeMessage>(NodeMessageType::Call, name, id, PID(), noreply);
     m->args = args;
     node->call_another_func(this, symbol, m);
 }
@@ -115,6 +112,7 @@ void FuncEnv::run(int &limit)
                     }
                 }
                 break;
+                case opcode::FUNC_CALL_LOCAL_RUN:
                 case opcode::FUNC_CALL_LOCAL:
                 {
                     auto name = (*env->const_string)[c.data];
@@ -131,11 +129,12 @@ void FuncEnv::run(int &limit)
                         args.push_back(*(st.top()->copy()));
                         st.pop();
                     }
-                    call_another_func(name, args);
+                    call_another_func(name, args, c.op == opcode::FUNC_CALL_LOCAL_RUN);
                     cur++;
                     return;
                 }
                 break;
+                case opcode::FUNC_CALL_BY_NAME_RUN:
                 case opcode::FUNC_CALL_BY_NAME:
                 {
                     auto name = (*env->const_string)[c.data];
@@ -154,7 +153,7 @@ void FuncEnv::run(int &limit)
                         args.push_back(*(st.top()->copy()));
                         st.pop();
                     }
-                    call_another_func(lastsymbol->copy(), name, args);
+                    call_another_func(lastsymbol->copy(), name, args, c.op == opcode::FUNC_CALL_BY_NAME_RUN);
                     cur++;
                     return;
                 }

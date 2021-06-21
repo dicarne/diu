@@ -18,11 +18,13 @@ enum class opcode : opcode_type
     VAR_FIND_C = 13,        // 根据名字，在栈顶对象内查找此名字，若为对象，则加入栈顶 VAR_FIND_C 0 NAME_INDEX
     FUNC_CALL_LOCAL = 14,   // 根据名字，用栈顶N个元素进行函数调用 FUNC_CALL_LOCAL ARG_COUNT NAME_INDEX
     FUNC_CALL_BY_NAME = 15, // 根据名字，在栈顶的指定函数，用栈顶N个元素进行函数调用 FUNC_CALL_BY_NAME ARG_COUNT NAME_INDEX
-    RETURN = 16,            // RETUEN 0 0
-    CALC_OP = 17,           // 计算符号 CALC_OP OPCODE
-    JUMP = 18,              // JUMP 0 OFFSET
-    JUMP_NIF = 19,          // JUMP_NIF 0 OFFSET
-    WAIT_FUNC_CALL = 20,    // 等待函数返回
+    FUNC_CALL_LOCAL_RUN = 16,   // 根据名字，用栈顶N个元素进行函数调用 FUNC_CALL_LOCAL ARG_COUNT NAME_INDEX
+    FUNC_CALL_BY_NAME_RUN = 17,
+    RETURN = 18,            // RETUEN 0 0
+    CALC_OP = 19,           // 计算符号 CALC_OP OPCODE
+    JUMP = 20,              // JUMP 0 OFFSET
+    JUMP_NIF = 21,          // JUMP_NIF 0 OFFSET
+    WAIT_FUNC_CALL = 22,    // 等待函数返回
 };
 
 struct opcomd
