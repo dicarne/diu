@@ -10,33 +10,18 @@
 #include "compiler/bytecode/compile_bytecode.hpp"
 #include "Engine/codes/CodeCodePage.hpp"
 #include "Engine/codes/CodeEngine.hpp"
+#include "compiler/compiler.hpp"
 
 int main(int, char **)
 {
     auto ce = make_shared<CodeEngine>();
     Engine e = Engine(ENGINE_VERSION);
     e.codes = ce;
-    auto writer = make_shared<bytecode_writer>("test.diuc");
+    vector<string> files;
+    files.push_back("test.diu");
+    files.push_back("test2.diu");
 
-    {
-        lexer lex;
-        auto tokens = lex.process_char_buff("test.diu", charset::utf8);
-        shared_ptr<AST> ast = make_shared<AST>();
-        ast->build_ast_from_tokens(tokens);
-        compile_bytecode compiler(ast, writer);
-        compiler.run();
-    }
-
-    {
-        lexer lex;
-        auto tokens = lex.process_char_buff("test2.diu", charset::utf8);
-        shared_ptr<AST> ast = make_shared<AST>();
-        ast->build_ast_from_tokens(tokens);
-        compile_bytecode compiler(ast, writer);
-        compiler.run();
-    }
-
-    writer->complete_make();
+    compiler::compile("test.diuc", files);
 
     bytecode_reader br("test.diuc");
     br.read_all(ce);
