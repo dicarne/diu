@@ -31,6 +31,7 @@ public:
     shared_ptr<CodeEngine> codes;
     void Run(string mod, string node, string func);
     void Run(string mod, string node, string func, shared_ptr<NodeMessage> message);
+    void Run(PID node, shared_ptr<NodeMessage> msg);
     shared_ptr<Node> NewNode(string mod, string node);
     void SendMessage(NodeMessage *msg);
     void RunCode();

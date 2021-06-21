@@ -51,12 +51,43 @@ void Engine::Run(string mod, string node, string func, shared_ptr<NodeMessage> m
     m.id = message->id;
     m.callbackNode = message->callbackNode;
     m.args = message->args;
-    nodei->direct_call(m);
+    if (message->name == "new")
+    {
+        auto reply = new NodeMessage();
+        reply->type = NodeMessageType::Callback;
+        reply->id = message->id;
+        reply->callbackNode = message->callbackNode;
+        reply->name = message->name;
+        reply->args.push_back(Object(nodei->Pid));
+        SendMessage(reply);
+    }
+    else
+    {
+        nodei->direct_call(m);
+    }
+}
+void Engine::Run(PID node, shared_ptr<NodeMessage> msg)
+{
+    auto find_n = nodes.find(node.pid);
+    if (find_n != nodes.end())
+    {
+        auto reply = new NodeMessage();
+        reply->type = NodeMessageType::Call;
+        reply->id = msg->id;
+        reply->callbackNode = msg->callbackNode;
+        reply->name = msg->name;
+        reply->args = msg->args;
+        find_n->second->messageBox->push(reply);
+    }
 }
 void Engine::SendMessage(NodeMessage *msg)
 {
     auto cb = msg->callbackNode;
-    // TODO:
+    auto find_n = nodes.find(cb.pid);
+    if (find_n != nodes.end())
+    {
+        find_n->second->messageBox->push(msg);
+    }
 }
 
 void Engine::RunCode()

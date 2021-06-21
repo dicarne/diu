@@ -1,8 +1,9 @@
 module "my"
 node Main{
     fn main() {
-        let a = sys:PID()
-        sys:print(a)
+        let a = A2:new()
+        a:Hello()
+        sys:print("Success!")
     }
 
     fn add(a: int, b: int) {

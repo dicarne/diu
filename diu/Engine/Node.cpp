@@ -49,7 +49,7 @@ void Node::run_once()
             {
                 auto f = wf->second;
                 waitting_callback.erase(sp->id);
-                f->send_callback(sp->args[0]);
+                f->handle_callback(sp->args[0]);
             }
         }
     }
@@ -99,6 +99,10 @@ shared_ptr<FuncEnv> Node::create_func(shared_ptr<NodeMessage> p)
     func_index++;
 
     auto fc = code_page->funcs.find(p->name);
+    if (fc == code_page->funcs.end())
+    {
+        throw runtime_error("Can not find func: " + p->name + " in " + code_page->name);
+    }
     auto fr = make_shared<FuncEnv>();
     fr->init(fc->second, p);
     fr->id = func_index;
@@ -115,76 +119,89 @@ void Node::run_func(shared_ptr<FuncEnv> fr)
 
 void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_ptr<NodeMessage> msg)
 {
-    auto chain = std::get<shared_ptr<vector<string>>>(symbol->value);
-    msg->callbackNode = Pid;
-    if (chain->size() == 1 && (*chain)[0] == "sys")
+    if (symbol->type == ObjectRawType::TypeSymbol)
     {
-        if (msg->name == "print")
+        auto chain = std::get<shared_ptr<vector<string>>>(symbol->value);
+        msg->callbackNode = Pid;
+        if (chain->size() == 1 && (*chain)[0] == "sys")
         {
-            std::cout << msg->args[0].to_string() << std::endl;
-        }
-        if (msg->name == "PID")
-        {
-            caller->waitting = false;
-            caller->ret = make_shared<Object>(Pid);
-            return;
-        }
-        caller->waitting = false;
-        caller->ret = make_shared<Object>(0);
-        return;
-    }
-    if (chain->size() == 1)
-    {
-        if (!caller->code->mod.expired())
-        {
-            auto mod = caller->code->mod.lock();
-            auto another_node = mod->nodes->find((*chain)[0]);
-            if (another_node != mod->nodes->end())
+            if (msg->name == "print")
             {
-                waitting_callback[msg->id] = caller;
-                engine->Run(mod->module_name, (*chain)[0], msg->name, msg);
+                std::cout << msg->args[0].to_string() << std::endl;
+            }
+            if (msg->name == "PID")
+            {
+                caller->waitting = false;
+                caller->ret = make_shared<Object>(Pid);
                 return;
             }
-            else
+            caller->waitting = false;
+            caller->ret = make_shared<Object>(0);
+            return;
+        }
+        if (chain->size() == 1)
+        {
+            if (!caller->code->mod.expired())
             {
-                auto pkg = mod->outer_symbol_pkg_map->find((*chain)[0]);
-                if (pkg != mod->outer_symbol_pkg_map->end())
+                auto mod = caller->code->mod.lock();
+                auto another_node = mod->nodes->find((*chain)[0]);
+                if (another_node != mod->nodes->end())
                 {
-                    auto pkgname = pkg->second;
-                    chain->insert(chain->begin(), pkgname);
+                    waitting_callback[msg->id] = caller;
+                    engine->Run(mod->module_name, (*chain)[0], msg->name, msg);
+                    return;
                 }
                 else
                 {
-                    throw runtime_error("Remote call error here");
+                    auto pkg = mod->outer_symbol_pkg_map->find((*chain)[0]);
+                    if (pkg != mod->outer_symbol_pkg_map->end())
+                    {
+                        auto pkgname = pkg->second;
+                        chain->insert(chain->begin(), pkgname);
+                    }
+                    else
+                    {
+                        throw runtime_error("Remote call error here");
+                    }
+                }
+            }
+        }
+        if (chain->size() == 2)
+        {
+            waitting_callback[msg->id] = caller;
+            if (!caller->code->mod.expired())
+            {
+                auto mod = caller->code->mod.lock();
+                auto pkg = (*chain)[0];
+
+                auto modules = engine->codes->modules;
+                auto fmod = modules.find(pkg);
+                if (fmod != modules.end())
+                {
+                    engine->Run(pkg, (*chain)[1], msg->name, msg);
+                    return;
+                }
+                else
+                {
+                    throw runtime_error("Can't find module pkg: " + pkg);
                 }
             }
         }
     }
-    if (chain->size() == 2)
+    else if (symbol->type == ObjectRawType::Pid)
     {
         waitting_callback[msg->id] = caller;
-        if (!caller->code->mod.expired())
-        {
-            auto mod = caller->code->mod.lock();
-            auto pkg = (*chain)[0];
-
-            auto modules = engine->codes->modules;
-            auto fmod = modules.find(pkg);
-            if (fmod != modules.end())
-            {
-                engine->Run(pkg, (*chain)[1], msg->name, msg);
-                return;
-            }
-            else
-            {
-                throw runtime_error("Can't find module pkg: " + pkg);
-            }
-        }
+        msg->callbackNode = Pid;
+        engine->Run(symbol->getv<PID>(), msg);
+        return;
+    }
+    else
+    {
+        throw runtime_error("Unknown func call method!");
     }
 }
 void Node::call_another_func(FuncEnv *caller, shared_ptr<NodeMessage> msg)
 {
-
     // auto fun = msg->name;
     // auto ff= code_page->funcs.find(fun);
     // if(ff==code_page->funcs.end()){

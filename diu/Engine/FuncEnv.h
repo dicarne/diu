@@ -42,11 +42,7 @@ public:
     int callback_id;
     FuncEnv(/* args */) {}
     ~FuncEnv() {}
-    void send_callback(Object obj)
-    {
-        waitting = false;
-        runtime.push(make_shared<Object>(obj));
-    }
+
     void init(shared_ptr<CodeFunc> c, shared_ptr<NodeMessage> m)
     {
         code = c;
@@ -67,7 +63,7 @@ public:
 
     void handle_callback(Object callback)
     {
-        runtime.push(make_shared<Object>(callback));
+        ret = make_shared<Object>(callback);
         waitting = false;
     }
 

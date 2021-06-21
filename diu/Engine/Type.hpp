@@ -147,7 +147,8 @@ public:
         this->type = ObjectRawType::Num;
         value = double(d);
     }
-    Object(PID pid) {
+    Object(PID pid)
+    {
         this->type = ObjectRawType::Pid;
         value = pid;
     }
@@ -296,6 +297,12 @@ public:
         }
         auto chain = std::get<shared_ptr<vector<string>>>(value);
         chain->push_back(name);
+    }
+
+    template <typename T>
+    T getv()
+    {
+        return std::get<T>(this->value);
     }
 
     static shared_ptr<Object> add(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
