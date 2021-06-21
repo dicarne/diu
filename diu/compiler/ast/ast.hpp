@@ -151,9 +151,9 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
             if (ktype == keyword_type::use_pkg_)
             {
                 it++;
-                if ((*it)->get_type() == token_types::name)
+                if ((*it)->get_type() == token_types::name || (*it)->get_type() == token_types::string_l)
                 {
-                    auto pkg_name = static_cast<token_name *>(*it)->name;
+                    auto pkg_name = (*it)->get_type() == token_types::name ? static_cast<token_name *>(*it)->name : static_cast<token_string *>(*it)->content;
                     auto pkg = UsePackageInfo();
                     pkg.packname = pkg_name;
                     auto old_pkg = packages.find(pkg_name);
