@@ -1,4 +1,4 @@
-from "./another" use {n1}
+module "my"
 node Main{
     fn main() {
         let a = sys:PID()

@@ -54,7 +54,8 @@ public:
 
     void run()
     {
-        writer->set_meta_data(ast->engine_ver);
+        get_const_double_index("0");
+        writer->set_meta_data(ast->engine_ver, ast->module_name);
         for (auto &kv : ast->packages)
         {
             auto pkg = kv.second.packname;
@@ -83,7 +84,7 @@ public:
             auto pk = it.second;
             symbol_import_index[sy] = writer->reg_symbol(const_value_index[sy], pkg_import_index[pk]);
         }
-        get_const_double_index("0");
+        
 
         for (auto &node : ast->nodes)
         {

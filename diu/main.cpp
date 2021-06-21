@@ -8,7 +8,7 @@
 #include "compiler/ast/ast.hpp"
 #include "compiler/bytecode/bytecode_reader.hpp"
 #include "compiler/bytecode/compile_bytecode.hpp"
-#include "Engine/codes/CodeModule.hpp"
+#include "Engine/codes/CodeCodePage.hpp"
 #include "Engine/codes/CodeEngine.hpp"
 
 int main(int, char **)
@@ -26,22 +26,22 @@ int main(int, char **)
         compiler.run();
         bytecode_reader br("test.diuc");
         auto mod = br.readall();
-        ce->modules[mod->module_name] = mod;
+        ce->add_code_page(mod);
     }
 
     {
-        //lexer lex;
-        //auto tokens = lex.process_char_buff("test2.diu", charset::utf8);
-        //shared_ptr<AST> ast = make_shared<AST>();
-        //ast->build_ast_from_tokens(tokens);
-        //compile_bytecode compiler(ast, "test2.diuc");
-        //compiler.run();
-        //bytecode_reader br("test2.diuc");
-        //auto mod = br.readall();
-        //ce->modules[mod->module_name] = mod;
+        lexer lex;
+        auto tokens = lex.process_char_buff("test2.diu", charset::utf8);
+        shared_ptr<AST> ast = make_shared<AST>();
+        ast->build_ast_from_tokens(tokens);
+        compile_bytecode compiler(ast, "test2.diuc");
+        compiler.run();
+        bytecode_reader br("test2.diuc");
+        auto mod = br.readall();
+        ce->add_code_page(mod);
     }
 
-    e.Run("test.diuc", "Main", "main");
+    e.Run("my", "Main", "main");
     e.RunCode();
     return 0;
 }

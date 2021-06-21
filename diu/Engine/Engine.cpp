@@ -21,8 +21,8 @@ shared_ptr<Node> Engine::NewNode(string mod, string node_name)
     auto codemod = codes->modules.find(mod);
     if (codemod == codes->modules.end())
         throw runtime_error("can't find module " + mod);
-    auto codenode = codemod->second->nodes->find(node_name);
-    if (codenode == codemod->second->nodes->end())
+    auto codenode = codemod->second->node_to_code_page.find(node_name);
+    if (codenode == codemod->second->node_to_code_page.end())
         throw runtime_error("can't find node " + node_name + " in module " + mod);
     auto node = make_shared<Node>();
     AddNewNode(node);

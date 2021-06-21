@@ -21,7 +21,7 @@ public:
     };
     vector<opcomd> codes;
     std::weak_ptr<CodeNode> node;
-    std::weak_ptr<CodeModule> mod;
+    std::weak_ptr<CodeCodePage> mod;
     vector<arg> args;
     CodeFunc(/* args */) {}
     ~CodeFunc() {}

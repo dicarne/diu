@@ -53,14 +53,16 @@ private:
 
 public:
     string path;
+    int module_name_index;
     bytecode_writer(string path)
     {
         this->path = path;
     }
     ~bytecode_writer();
-    void set_meta_data(double engine_version)
+    void set_meta_data(double engine_version, string module_name)
     {
         this->engine_version = engine_version;
+        module_name_index = write_const_string(module_name);
     }
 
     void make();
@@ -159,6 +161,8 @@ void bytecode_writer::make()
     write_file(const_count);
     file << constvalue.str();
 
+    write_file(module_name_index);
+
     write_file(pkg_count);
     file << packges.str();
 
@@ -181,6 +185,7 @@ void bytecode_writer::make()
 // LENGTH(?)                        uint(4)
 // DATA                             int(4) double(8) string(n)
 // .............. *N .....................
+// MOUDLE NAME INDEX                int(4)
 // PACKAGE_COUNT                    int(4)
 // ------------IMPORT PACKAGE-------------
 // PACKANGE_NAME_[INDEX]            int(4)

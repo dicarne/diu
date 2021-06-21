@@ -7,7 +7,7 @@ using std::string;
 #include "bytestream.hpp"
 #include <unordered_map>
 #include <iostream>
-#include "../../Engine/codes/CodeModule.hpp"
+#include "../../Engine/codes/CodeCodePage.hpp"
 using std::cout;
 using std::endl;
 using std::unordered_map;
@@ -44,10 +44,9 @@ public:
         return *(reinterpret_cast<T *>(buffer));
     }
 
-    shared_ptr<CodeModule> readall()
+    shared_ptr<CodeCodePage> readall()
     {
-        auto mod = make_shared<CodeModule>();
-        mod->module_name = path;
+        auto mod = make_shared<CodeCodePage>();
 
         mod->engine_version = version;
 
@@ -92,6 +91,12 @@ public:
             }
         }
 
+        auto module_name_index = read<int>();
+        auto module_name = (*mod->const_string)[module_name_index];
+        cout << "-----[MODULE]------" << endl;
+        cout << module_name << endl;
+        mod->module_name = module_name;
+
         cout << "-----[PACKAGE]-----" << endl;
 
         auto package_count = read<int>();
@@ -130,6 +135,7 @@ public:
             auto func_count = read<int>();
 
             cout << "======[NODE  " << (*mod->const_string)[node_name_index] << "  ]======" << endl;
+            nodeptr->name = (*mod->const_string)[node_name_index];
             for (auto j = 0; j < func_count; j++)
             {
                 auto funcptr = make_shared<CodeFunc>();

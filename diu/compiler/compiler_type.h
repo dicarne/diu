@@ -76,7 +76,8 @@ enum class keyword_type
     elif_,
     else_,
     while_,
-    engine_
+    engine_,
+    moudle_
 };
 
 class compiler_type

@@ -1,6 +1,5 @@
 #include "compiler_type.h"
 
-
 compiler_type::compiler_type(/* args */)
 {
 }
@@ -90,4 +89,5 @@ const unordered_map<std::string, keyword_type> compiler_type::keyword_map = {
     {"elif", keyword_type::elif_},
     {"else", keyword_type::else_},
     {"while", keyword_type::while_},
-    {"engine", keyword_type::engine_}};
+    {"engine", keyword_type::engine_},
+    {"module", keyword_type::moudle_}};

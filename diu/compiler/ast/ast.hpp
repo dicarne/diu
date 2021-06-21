@@ -41,6 +41,7 @@ public:
     AST(/* args */);
     ~AST();
     double engine_ver = 0;
+    string module_name = "__GLOBAL__";
     unordered_map<string, UsePackageInfo> packages;
     unordered_map<string, string> outer_symbol;
     unordered_map<string, ast_node> nodes;
@@ -191,7 +192,25 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                 }
                 else
                 {
-                    throw compile_error("a version string should behind [engine]", (*it)->line_num);
+                    throw compile_error("a version number should behind [engine]", (*it)->line_num);
+                }
+            }
+            if (ktype == keyword_type::moudle_)
+            {
+                it++;
+                if (module_name != "__GLOBAL__")
+                {
+                    throw compile_error("[module] should only appear once", (*it)->line_num);
+                }
+                if ((*it)->get_type() == token_types::string_l)
+                {
+                    module_name = static_cast<token_string *>(*it)->content;
+                    it++;
+                    continue;
+                }
+                else
+                {
+                    throw compile_error("a module string should behind [module]", (*it)->line_num);
                 }
             }
 
@@ -440,7 +459,6 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                 statements.push_back(stat);
                 continue;
             }
-
             else if (token->type == keyword_type::while_)
             {
                 fi++;

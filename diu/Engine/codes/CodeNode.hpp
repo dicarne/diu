@@ -3,12 +3,12 @@
 #include <vector>
 #include <string>
 
-#include "CodeModule.hpp"
+#include "CodeCodePage.hpp"
 #include "CodeFunc.hpp"
 using std::vector;
 using std::string;
 class CodeFunc;
-class CodeModule;
+class CodeCodePage;
 class CodeNode
 {
 private:
@@ -18,7 +18,7 @@ public:
     ~CodeNode() {}
 
     string name;
-    std::weak_ptr<CodeModule> mod;
+    std::weak_ptr<CodeCodePage> mod;
 
     unordered_map<string, shared_ptr<CodeFunc>> funcs;
 };
