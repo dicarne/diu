@@ -40,6 +40,7 @@ public:
     int cur;
     PID callback_node;
     int callback_id;
+    string name;
     FuncEnv(/* args */) {}
     ~FuncEnv() {}
 
@@ -58,6 +59,7 @@ public:
                 local_var[(*env->const_string)[a.arg_name]] = make_shared<Object>(m->args[index]);
                 index++;
             }
+            name = code->name;
         }
     }
 

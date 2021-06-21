@@ -59,7 +59,8 @@ void Engine::Run(string mod, string node, string func, shared_ptr<NodeMessage> m
         reply->callbackNode = message->callbackNode;
         reply->name = message->name;
         reply->args.push_back(Object(nodei->Pid));
-        SendMessage(reply);
+        Run(nodei->Pid, message);
+        //SendMessage(reply);
     }
     else
     {

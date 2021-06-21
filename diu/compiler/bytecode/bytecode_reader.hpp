@@ -154,7 +154,7 @@ public:
                 auto func_name_index = read<int>();
                 auto is_static = read<byte>();
                 auto args_count = read<byte>();
-
+                funcptr->name = (*mod->const_string)[func_name_index];
                 cout << (*mod->const_string)[func_name_index] << endl;
 
                 for (auto k = 0; k < args_count; k++)

@@ -40,7 +40,28 @@ void Node::run_once()
         auto sp = shared_ptr<NodeMessage>(p);
         if (sp->type == NodeMessageType::Call)
         {
-            run_func(create_func(sp));
+            if (sp->name == "new")
+            {
+                auto fc = code_page->funcs.find(p->name);
+                if (fc != code_page->funcs.end())
+                {
+                    auto newfun = create_func(sp);
+                    run_env.push_back(newfun);
+                }
+                else
+                {
+                    auto nodemsg = new NodeMessage();
+                    nodemsg->callbackNode = PID(sp->callbackNode);
+                    nodemsg->id = sp->id;
+                    nodemsg->type = NodeMessageType::Callback;
+                    nodemsg->args.push_back(Object(Pid));
+                    engine->SendMessage(nodemsg);
+                }
+            }
+            else
+            {
+                run_func(create_func(sp));
+            }
         }
         else
         {
@@ -72,7 +93,15 @@ void Node::run_once()
             nodemsg->callbackNode = cur_func->callback_node;
             nodemsg->id = cur_func->callback_id;
             nodemsg->type = NodeMessageType::Callback;
-            nodemsg->args.push_back(*(cur_func->ret->copy()));
+            if (cur_func->name == "new")
+            {
+                nodemsg->args.push_back(Object(Pid));
+            }
+            else
+            {
+                nodemsg->args.push_back(*(cur_func->ret->copy()));
+            }
+
             if (nodemsg->callbackNode.pid == 0)
             {
                 // LOCAL

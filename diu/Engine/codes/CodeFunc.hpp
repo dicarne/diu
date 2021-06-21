@@ -23,6 +23,7 @@ public:
     std::weak_ptr<CodeNode> node;
     std::weak_ptr<CodeCodePage> mod;
     vector<arg> args;
+    string name;
     CodeFunc(/* args */) {}
     ~CodeFunc() {}
 };
