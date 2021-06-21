@@ -9,6 +9,7 @@
 #include "RemoteEngine.h"
 #include "Node.h"
 #include "codes/CodeEngine.hpp"
+#include "../compiler/bytecode/bytecode_reader.hpp"
 
 using std::make_shared;
 using std::shared_ptr;
@@ -33,6 +34,7 @@ public:
     shared_ptr<Node> NewNode(string mod, string node);
     void SendMessage(NodeMessage *msg);
     void RunCode();
+    void load(string byecode_file);
 };
 
 #endif

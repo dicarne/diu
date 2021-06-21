@@ -3,6 +3,8 @@
 Engine::Engine(int version)
 {
     this->version = version;
+    this->codes = make_shared<CodeEngine>();
+    ;
 }
 
 Engine::~Engine()
@@ -67,4 +69,10 @@ void Engine::RunCode()
             kv.second->run_once();
         }
     }
+}
+
+void Engine::load(string byecode_file)
+{
+    bytecode_reader br("test.diuc");
+    br.read_all(this->codes);
 }
