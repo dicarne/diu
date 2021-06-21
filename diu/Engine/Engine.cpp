@@ -125,6 +125,6 @@ void Engine::RunCode()
 
 void Engine::load(string byecode_file)
 {
-    bytecode_reader br("test.diuc");
+    bytecode_reader br(byecode_file);
     br.read_all(this->codes);
 }
