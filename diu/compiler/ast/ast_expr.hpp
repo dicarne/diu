@@ -22,7 +22,8 @@ public:
         instance_string,
         func_call,
         func_call_run,
-        object_chain
+        object_chain,
+        await_call
     };
     string ins_value;
 

@@ -288,6 +288,22 @@ private:
             write_op(stream, opcode::LOAD, 0, get_const_double_index(expr->ins_value));
             //cout << "[LOAD] [NUMI] " << expr->ins_value << " at " << get_const_double_index(expr->ins_value) << endl;
             break;
+        case ast_expr::type::await_call:
+            for (auto i = 0; i < expr->caller.size(); i++)
+            {
+                if (i == 0)
+                {
+                    write_op(stream, opcode::VAR_FIND, 0, get_const_index(expr->caller[i]));
+                    //cout << "[VAR_FIND] " + expr->caller[i] << " " << get_const_index(expr->caller[i]) << endl;
+                }
+                else
+                {
+                    write_op(stream, opcode::VAR_FIND_C, 0, get_const_index(expr->caller[i]));
+                    //cout << "[VAR_FIND_C] " + expr->caller[i] << " " << get_const_index(expr->caller[i]) << endl;
+                }
+            }
+            write_op(stream, opcode::WAIT_FUNC_CALL, 0, 1);
+            break;
         case ast_expr::type::object_chain:
 
             for (auto i = 0; i < expr->caller.size(); i++)
@@ -329,7 +345,9 @@ private:
                 {
                     write_op(stream, opcode::FUNC_CALL_BY_NAME, expr->args.size(), get_const_index(expr->func_name));
                     write_op(stream, opcode::WAIT_FUNC_CALL, 0, 0);
-                }else{
+                }
+                else
+                {
                     write_op(stream, opcode::FUNC_CALL_BY_NAME_RUN, expr->args.size(), get_const_index(expr->func_name));
                 }
             }
@@ -339,8 +357,10 @@ private:
                 {
                     write_op(stream, opcode::FUNC_CALL_LOCAL, expr->args.size(), get_const_index(expr->caller[0]));
                     write_op(stream, opcode::WAIT_FUNC_CALL, 0, 0);
-                }else{write_op(stream, opcode::FUNC_CALL_LOCAL_RUN, expr->args.size(), get_const_index(expr->caller[0]));
-                    
+                }
+                else
+                {
+                    write_op(stream, opcode::FUNC_CALL_LOCAL_RUN, expr->args.size(), get_const_index(expr->caller[0]));
                 }
             }
 

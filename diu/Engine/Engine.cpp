@@ -35,10 +35,10 @@ shared_ptr<Node> Engine::NewNode(string mod, string node_name)
     return node;
 }
 
-void Engine::Run(string mod, string node, string func, bool noreply)
+void Engine::Run(string mod, string node, string func)
 {
     auto nodei = NewNode(mod, node);
-    NodeMessage m(NodeMessageType::Call, func, 0, PID(0, 0), noreply);
+    NodeMessage m(NodeMessageType::Call, func, 0, PID(0, 0), false);
     m.name = func;
     m.id = 0;
     m.callbackNode = PID(0, 0);
@@ -73,7 +73,7 @@ void Engine::Run(string mod, string node, string func, shared_ptr<NodeMessage> m
             module_collection[node] = NewNode(mod, node);
         }
         auto n = node_static_f != module_collection.end() ? node_static_f->second : module_collection[node];
-        NodeMessage m(NodeMessageType::Call, message->name, message->id, message->callbackNode, message->noreply);
+        NodeMessage m(NodeMessageType::Call, message->name, message->id, message->callbackNode, message->async_);
         m.args = message->args;
         n->direct_call(m);
     }
@@ -84,7 +84,7 @@ void Engine::Run(PID node, shared_ptr<NodeMessage> msg)
     auto find_n = nodes.find(node.pid);
     if (find_n != nodes.end())
     {
-        auto reply = new NodeMessage(NodeMessageType::Call, msg->name, msg->id, msg->callbackNode, msg->noreply);
+        auto reply = new NodeMessage(NodeMessageType::Call, msg->name, msg->id, msg->callbackNode, msg->async_);
         reply->args = msg->args;
         find_n->second->push_massage(reply);
     }

@@ -46,8 +46,6 @@ void Node::run_once()
                 if (fc != code_page->funcs.end())
                 {
                     auto newfun = create_func(sp);
-                    if (sp->noreply)
-                        newfun->noreply = true;
                     run_env.push_back(newfun);
                 }
                 else
@@ -60,19 +58,32 @@ void Node::run_once()
             else
             {
                 auto f = create_func(sp);
-                if (sp->noreply)
-                    f->noreply = true;
                 run_func(f);
             }
         }
         else
         {
-            auto wf = waitting_callback.find(sp->id);
-            if (wf != waitting_callback.end())
+            if (!sp->async_)
             {
-                auto f = wf->second;
-                waitting_callback.erase(sp->id);
-                f->handle_callback(sp->args[0]);
+                auto wf = waitting_callback.find(sp->id);
+                if (wf != waitting_callback.end())
+                {
+                    auto f = wf->second;
+                    waitting_callback.erase(sp->id);
+                    f->handle_callback(sp->args[0]);
+                }
+            }
+            else
+            {
+                // TODO: 维护一个id到函数的映射表，通过查找加速！在完成函数后删除！
+                for (auto &f : run_env)
+                {
+                    if (f->id == sp->id)
+                    {
+                        f->handle_async_callback(sp->args[0], sp->args[1]);
+                        break;
+                    }
+                }
             }
         }
     }
@@ -89,9 +100,9 @@ void Node::run_once()
             else
                 run_env.push_back(cur_func);
         }
-        else if (!cur_func->noreply)
+        else
         {
-            auto nodemsg = new NodeMessage(NodeMessageType::Callback, "", cur_func->callback_id, cur_func->callback_node, true);
+            auto nodemsg = new NodeMessage(NodeMessageType::Callback, "", cur_func->callback_id, cur_func->callback_node, cur_func->async_call);
             if (cur_func->name == "new")
             {
                 nodemsg->args.push_back(Object(Pid));
@@ -103,14 +114,27 @@ void Node::run_once()
 
             if (nodemsg->callbackNode.pid == 0)
             {
-                // LOCAL
-                auto fw = waitting_callback.find(nodemsg->id);
-                if (fw != waitting_callback.end())
+                if (nodemsg->async_ == 0)
                 {
-                    fw->second->handle_callback(*(cur_func->ret->copy()));
+                    auto fw = waitting_callback.find(nodemsg->id);
+                    if (fw != waitting_callback.end())
+                    {
+                        fw->second->handle_callback(*(cur_func->ret->copy()));
+                    }
+                    delete nodemsg;
                 }
-
-                delete nodemsg;
+                else
+                {
+                    for (auto &f : run_env)
+                    {
+                        if (f->id == nodemsg->id)
+                        {
+                            f->handle_async_callback(nodemsg->args[0], Object::make_await_o(cur_func->async_call));
+                            break;
+                        }
+                    }
+                }
+                // LOCAL
             }
             else
                 engine->SendMessage(nodemsg);
@@ -137,7 +161,7 @@ shared_ptr<FuncEnv> Node::create_func(shared_ptr<NodeMessage> p)
     fr->node = this;
     fr->callback_id = p->id;
     fr->callback_node = p->callbackNode;
-    fr->noreply = p->noreply;
+    fr->async_call = p->async_;
     return fr;
 }
 
@@ -176,7 +200,7 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_
                 auto another_node = mod->nodes->find((*chain)[0]);
                 if (another_node != mod->nodes->end())
                 {
-                    if (!msg->noreply)
+                    if (!msg->async_)
                         waitting_callback[msg->id] = caller;
                     engine->Run(mod->module_name, (*chain)[0], msg->name, msg);
                     return;
@@ -198,7 +222,7 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_
         }
         if (chain->size() == 2)
         {
-            if (!msg->noreply)
+            if (!msg->async_)
                 waitting_callback[msg->id] = caller;
             if (!caller->code->mod.expired())
             {
@@ -221,7 +245,7 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_
     }
     else if (symbol->type == ObjectRawType::Pid)
     {
-        if (!msg->noreply)
+        if (!msg->async_)
             waitting_callback[msg->id] = caller;
         msg->callbackNode = Pid;
         engine->Run(symbol->getv<PID>(), msg);
@@ -242,10 +266,10 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<NodeMessage> msg)
     // }
     // Local Call
     auto f = create_func(msg);
-    if (!msg->noreply)
+    if (!msg->async_)
         waitting_callback[msg->id] = caller;
     else
-        f->noreply = true;
+        f->async_call = msg->async_;
     run_func(f);
 }
 

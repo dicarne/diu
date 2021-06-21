@@ -91,4 +91,5 @@ const unordered_map<std::string, keyword_type> compiler_type::keyword_map = {
     {"while", keyword_type::while_},
     {"engine", keyword_type::engine_},
     {"module", keyword_type::moudle_},
-    {"run", keyword_type::run_}};
+    {"run", keyword_type::run_},
+    {"await", keyword_type::await_}};

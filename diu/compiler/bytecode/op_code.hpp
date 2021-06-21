@@ -25,6 +25,8 @@ enum class opcode : opcode_type
     JUMP = 20,              // JUMP 0 OFFSET
     JUMP_NIF = 21,          // JUMP_NIF 0 OFFSET
     WAIT_FUNC_CALL = 22,    // 等待函数返回
+    AWAIT = 23,
+    AWAIT_C = 24
 };
 
 struct opcomd

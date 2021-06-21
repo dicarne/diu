@@ -100,9 +100,10 @@ enum ObjectRawType
     Bool,
     Map,
     Array,
-    Str,       // !
-    Struct,    // !
-    TypeSymbol // !
+    Str,        // !
+    Struct,     // !
+    TypeSymbol, // !
+    Await
 };
 
 class Object;
@@ -173,6 +174,18 @@ public:
         value = ano.value;
         type = ano.type;
         this->table = ano.table;
+    }
+    static shared_ptr<Object> make_await(int async_index)
+    {
+        auto o = make_shared<Object>(ObjectRawType::Await);
+        o->value = async_index;
+        return o;
+    }
+    static Object make_await_o(int async_index)
+    {
+        auto o = Object(ObjectRawType::Await);
+        o.value = async_index;
+        return o;
     }
 
     shared_ptr<Object> copy()

@@ -3,14 +3,10 @@ use you
 
 node Main {             // 声明一个节点
     fn main() {         // 声明一个函数
-        run haha(5)
-        you.n1:func2()
+        let a = run add(1, 2)
+        sys:print(await a)
     }
-    fn haha(c: num) {
-        you.n1:func()
-        if(c>0){
-            haha(c-1)
-        }
-        
+    fn add(a: num, b: num) {
+        return a + b
     }
 }

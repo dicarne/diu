@@ -1,18 +1,23 @@
 #include "FuncEnv.h"
-void FuncEnv::call_another_func(string name, vector<Object> args, bool noreply)
+void FuncEnv::call_another_func(string name, vector<Object> args, bool async_)
 {
-    if (!noreply)
+    if (!async_)
         waitting = true;
-    auto m = make_shared<NodeMessage>(NodeMessageType::Call, name, id, PID(0, 0), noreply);
+    else
+        async_index++;
+    auto m = make_shared<NodeMessage>(NodeMessageType::Call, name, id, PID(0, 0), async_ ? async_index : 0);
     m->args = args;
     node->call_another_func(this, m);
 }
-void FuncEnv::call_another_func(shared_ptr<Object> symbol, string name, vector<Object> args, bool noreply)
+void FuncEnv::call_another_func(shared_ptr<Object> symbol, string name, vector<Object> args, bool async_)
 {
-    if (!noreply)
+    if (!async_)
         waitting = true;
-    auto m = make_shared<NodeMessage>(NodeMessageType::Call, name, id, PID(), noreply);
+    else
+        async_index++;
+    auto m = make_shared<NodeMessage>(NodeMessageType::Call, name, id, PID(), async_ ? async_index : 0);
     m->args = args;
+
     node->call_another_func(this, symbol, m);
 }
 
@@ -115,6 +120,7 @@ void FuncEnv::run(int &limit)
                 case opcode::FUNC_CALL_LOCAL_RUN:
                 case opcode::FUNC_CALL_LOCAL:
                 {
+                    bool async_ = c.op == opcode::FUNC_CALL_LOCAL_RUN;
                     auto name = (*env->const_string)[c.data];
                     auto argcount = int(c.info);
                     stack<shared_ptr<Object>> st;
@@ -129,7 +135,9 @@ void FuncEnv::run(int &limit)
                         args.push_back(*(st.top()->copy()));
                         st.pop();
                     }
-                    call_another_func(name, args, c.op == opcode::FUNC_CALL_LOCAL_RUN);
+                    call_another_func(name, args, async_);
+                    if (async_)
+                        runtime.push(Object::make_await(async_index));
                     cur++;
                     return;
                 }
@@ -137,6 +145,7 @@ void FuncEnv::run(int &limit)
                 case opcode::FUNC_CALL_BY_NAME_RUN:
                 case opcode::FUNC_CALL_BY_NAME:
                 {
+                    bool async_ = c.op == opcode::FUNC_CALL_BY_NAME_RUN;
                     auto name = (*env->const_string)[c.data];
                     auto argcount = int(c.info);
                     auto lastsymbol = runtime.top();
@@ -153,7 +162,9 @@ void FuncEnv::run(int &limit)
                         args.push_back(*(st.top()->copy()));
                         st.pop();
                     }
-                    call_another_func(lastsymbol->copy(), name, args, c.op == opcode::FUNC_CALL_BY_NAME_RUN);
+                    call_another_func(lastsymbol->copy(), name, args, async_);
+                    if (async_)
+                        runtime.push(Object::make_await(async_index));
                     cur++;
                     return;
                 }
@@ -303,12 +314,30 @@ void FuncEnv::run(int &limit)
                 break;
                 case opcode::WAIT_FUNC_CALL:
                 {
-                    if (waitting)
-                        return;
+                    if (c.data == 0)
+                    {
+                        if (waitting)
+                            return;
+                        else
+                        {
+                            // 将函数返回值压入栈
+                            runtime.push(ret);
+                        }
+                    }
                     else
                     {
-                        // 将函数返回值压入栈
-                        runtime.push(ret);
+                        auto await_ = runtime.top();
+                        auto a_id = await_->getv<int>();
+                        auto f_await = waitting_async.find(a_id);
+                        if (f_await != waitting_async.end())
+                        {
+                            runtime.pop();
+                            runtime.push(f_await->second);
+                        }
+                        else
+                        {
+                            return;
+                        }
                     }
                 }
                 break;

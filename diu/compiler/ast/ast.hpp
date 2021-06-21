@@ -612,6 +612,12 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
     }
     auto expr = make_shared<ast_expr>();
     expr->expr_type = ast_expr::type::expressions;
+    bool RUN_FLAG = false;
+    if ((*it)->get_type() == token_types::keyword && static_cast<token_keyword *>(*it)->type == keyword_type::run_)
+    {
+        RUN_FLAG = true;
+        it++;
+    }
     if ((*it)->get_type() == token_types::name)
     {
         expr->expr_type = ast_expr::type::object_chain;
@@ -645,7 +651,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
                     if ((*it)->get_type() == token_types::name)
                     {
                         expr->func_name = static_cast<token_name *>(*it)->name;
-                        expr->expr_type = ast_expr::type::func_call;
+                        expr->expr_type = RUN_FLAG ? ast_expr::type::func_call_run : ast_expr::type::func_call;
                         break;
                     }
                     else
@@ -664,7 +670,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
             auto s = static_cast<token_op *>(*it)->type;
             if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::slb_)
             {
-                expr->expr_type = ast_expr::type::func_call;
+                expr->expr_type = RUN_FLAG ? ast_expr::type::func_call_run : ast_expr::type::func_call;
                 it--;
             }
         }
@@ -726,7 +732,46 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
         expr->ins_value = "0";
         return maybe_binary(expr, 0, it, tokens);
     }
-
+    else if ((*it)->get_type() == token_types::keyword && static_cast<token_keyword *>(*it)->type == keyword_type::await_)
+    {
+        expr->expr_type = ast_expr::type::await_call;
+        it++;
+        if ((*it)->get_type() != token_types::name)
+        {
+            throw compile_error("a name should follow [await]", (*it)->line_num);
+        }
+        if ((*it)->get_type() == token_types::name)
+        {
+            expr->caller.push_back(static_cast<token_name *>(*it)->name);
+            it++;
+            // handle a.b.c
+            // handle a.b.c:f
+            while (it != tokens.end())
+            {
+                if ((*it)->get_type() == token_types::op)
+                {
+                    auto sit = static_cast<token_op *>(*it);
+                    if (sit->type == op_type::dot_)
+                    {
+                        it++;
+                        if ((*it)->get_type() == token_types::name)
+                        {
+                            expr->caller.push_back(static_cast<token_name *>(*it)->name);
+                            it++;
+                            continue;
+                        }
+                        else
+                        {
+                            throw compile_error("a name should follow [.]", (*it)->line_num);
+                        }
+                    }
+                    break;
+                }
+                break;
+            }
+            return maybe_binary(expr, 0, it, tokens);
+        }
+    }
     throw compile_error("can not get next expr", (*it)->line_num);
     return expr;
 }

@@ -12,7 +12,7 @@ int main(int, char **)
 
     Engine e = Engine(ENGINE_VERSION);
     e.load("test.diuc");
-    e.Run("my", "Main", "main", true);
+    e.Run("my", "Main", "main");
     e.RunCode();
     return 0;
 }
