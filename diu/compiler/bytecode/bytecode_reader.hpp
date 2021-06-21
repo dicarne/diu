@@ -47,8 +47,7 @@ public:
 
     void read_all(shared_ptr<CodeEngine> engine)
     {
-        auto mode_flag = read<int>();
-        if (mode_flag == 1)
+        while (read<int>() == 1)
         {
             read_one_module(engine);
         }
