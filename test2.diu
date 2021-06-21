@@ -1,6 +1,6 @@
 module you
 node n1{
-    fn func() {
+    static fn func() {
         sys:print("YES!")
     }
 }

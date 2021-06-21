@@ -22,6 +22,7 @@ private:
     unordered_map<int, RemoteEngine> engines;
     int version;
     unordered_map<int64, shared_ptr<Node>> nodes;
+    unordered_map<string, unordered_map<string, shared_ptr<Node>>> static_node;
     int64 node_index = 0;
     void AddNewNode(shared_ptr<Node> node);
 

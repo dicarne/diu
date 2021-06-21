@@ -45,14 +45,10 @@ void Engine::Run(string mod, string node, string func)
 }
 void Engine::Run(string mod, string node, string func, shared_ptr<NodeMessage> message)
 {
-    auto nodei = NewNode(mod, node);
-    NodeMessage m;
-    m.name = message->name;
-    m.id = message->id;
-    m.callbackNode = message->callbackNode;
-    m.args = message->args;
+
     if (message->name == "new")
     {
+        auto nodei = NewNode(mod, node);
         auto reply = new NodeMessage();
         reply->type = NodeMessageType::Callback;
         reply->id = message->id;
@@ -60,11 +56,35 @@ void Engine::Run(string mod, string node, string func, shared_ptr<NodeMessage> m
         reply->name = message->name;
         reply->args.push_back(Object(nodei->Pid));
         Run(nodei->Pid, message);
-        //SendMessage(reply);
     }
     else
     {
-        nodei->direct_call(m);
+        // try find old:
+        auto old_module = static_node.find(mod);
+        if (old_module == static_node.end())
+        {
+            if (codes->modules.find(mod) != codes->modules.end())
+            {
+                static_node[mod] = unordered_map<string, shared_ptr<Node>>();
+            }
+            else
+            {
+                throw runtime_error("Can't find module: " + mod);
+            }
+        }
+        auto &module_collection = old_module != static_node.end() ? old_module->second : static_node[mod];
+        auto node_static_f = module_collection.find(node);
+        if (node_static_f == module_collection.end())
+        {
+            module_collection[node] = NewNode(mod, node);
+        }
+        auto n = node_static_f != module_collection.end() ? node_static_f->second : module_collection[node];
+        NodeMessage m;
+        m.name = message->name;
+        m.id = message->id;
+        m.callbackNode = message->callbackNode;
+        m.args = message->args;
+        n->direct_call(m);
     }
 }
 void Engine::Run(PID node, shared_ptr<NodeMessage> msg)

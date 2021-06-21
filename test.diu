@@ -3,7 +3,9 @@ use you
 
 node Main {             // 声明一个节点
     fn main() {         // 声明一个函数
-        let a = you.n1:new()
-        a:func()
+        you.n1:func()
+        you.n1:func()
+        you.n1:func()
+        you.n1:func()
     }
 }
