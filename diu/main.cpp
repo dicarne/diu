@@ -16,17 +16,15 @@ int main(int, char **)
     auto ce = make_shared<CodeEngine>();
     Engine e = Engine(ENGINE_VERSION);
     e.codes = ce;
+    auto writer = make_shared<bytecode_writer>("test.diuc");
 
     {
         lexer lex;
         auto tokens = lex.process_char_buff("test.diu", charset::utf8);
         shared_ptr<AST> ast = make_shared<AST>();
         ast->build_ast_from_tokens(tokens);
-        compile_bytecode compiler(ast, "test.diuc");
+        compile_bytecode compiler(ast, writer);
         compiler.run();
-        bytecode_reader br("test.diuc");
-        auto mod = br.readall();
-        ce->add_code_page(mod);
     }
 
     {
@@ -34,12 +32,14 @@ int main(int, char **)
         auto tokens = lex.process_char_buff("test2.diu", charset::utf8);
         shared_ptr<AST> ast = make_shared<AST>();
         ast->build_ast_from_tokens(tokens);
-        compile_bytecode compiler(ast, "test2.diuc");
+        compile_bytecode compiler(ast, writer);
         compiler.run();
-        bytecode_reader br("test2.diuc");
-        auto mod = br.readall();
-        ce->add_code_page(mod);
     }
+
+    writer->complete_make();
+
+    bytecode_reader br("test.diuc");
+    br.read_all(ce);
 
     e.Run("my", "Main", "main");
     e.RunCode();

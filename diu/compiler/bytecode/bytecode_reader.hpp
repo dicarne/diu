@@ -8,6 +8,7 @@ using std::string;
 #include <unordered_map>
 #include <iostream>
 #include "../../Engine/codes/CodeCodePage.hpp"
+#include "../../Engine/codes/CodeEngine.hpp"
 using std::cout;
 using std::endl;
 using std::unordered_map;
@@ -44,7 +45,16 @@ public:
         return *(reinterpret_cast<T *>(buffer));
     }
 
-    shared_ptr<CodeCodePage> readall()
+    void read_all(shared_ptr<CodeEngine> engine)
+    {
+        auto mode_flag = read<int>();
+        if (mode_flag == 1)
+        {
+            read_one_module(engine);
+        }
+    }
+
+    void read_one_module(shared_ptr<CodeEngine> engine)
     {
         auto mod = make_shared<CodeCodePage>();
 
@@ -226,7 +236,7 @@ public:
             }
             (*mod->nodes)[(*mod->const_string)[node_name_index]] = nodeptr;
         }
-        return mod;
+        engine->add_code_page(mod);
     }
 };
 

@@ -22,7 +22,7 @@ private:
     stringstream tmp;
     std::ofstream file;
     double engine_version;
-    void make_metadata();
+    void make_file_metadata();
     int const_count = 0;
     int pkg_count = 0;
     int symbol_count = 0;
@@ -51,21 +51,59 @@ private:
         file << value;
     }
 
+    void make();
+    bool clean = true;
+
 public:
     string path;
     int module_name_index;
     bytecode_writer(string path)
     {
         this->path = path;
+        engine_version = ENGINE_VERSION;
+        file = std::ofstream(path, std::ios::binary);
+        make_file_metadata();
     }
     ~bytecode_writer();
-    void set_meta_data(double engine_version, string module_name)
+
+    void being_new_module_file()
     {
-        this->engine_version = engine_version;
-        module_name_index = write_const_string(module_name);
+        if (!clean)
+        {
+            make();
+            metadata = stringstream();
+            constvalue = stringstream();
+            packges = stringstream();
+            symbols = stringstream();
+            nodes = stringstream();
+            tmp = stringstream();
+            const_count = 0;
+            pkg_count = 0;
+            symbol_count = 0;
+            node_count = 0;
+        }
+        clean = false;
     }
 
-    void make();
+    void set_meta_data(double engine_version, string module_name)
+    {
+        if (engine_version == 0)
+            engine_version = ENGINE_VERSION;
+        if (this->engine_version != engine_version)
+        {
+            // TODO: 若使用不支持的引擎版本，则使用对应引擎进行编译
+            throw compile_error("Engine Version Not Surrort Yet! ", 0);
+        }
+        module_name_index = write_const_string(module_name);
+        
+    }
+
+    void complete_make()
+    {
+        make();
+        write_file(0);
+        file.close();
+    }
 
     // 返回常量索引
     int write_const_double(string num)
@@ -144,18 +182,16 @@ bytecode_writer::~bytecode_writer()
 {
 }
 
-void bytecode_writer::make_metadata()
+void bytecode_writer::make_file_metadata()
 {
     metadata.str("");
-    write_metadata(_DIU_MAGIC);     // 用于判断是否是diu的二进制文件
-    write_metadata(engine_version); // 执行引擎版本
+    write_file(_DIU_MAGIC);     // 用于判断是否是diu的二进制文件
+    write_file(engine_version); // 执行引擎版本
 }
 
 void bytecode_writer::make()
 {
-    file = std::ofstream(path, std::ios::binary);
-
-    make_metadata();
+    write_file(1);
     file << metadata.str();
 
     write_file(const_count);
@@ -171,14 +207,13 @@ void bytecode_writer::make()
 
     write_file(node_count);
     file << nodes.str();
-
-    file.close();
 }
 
 #endif
 
 // MAGIC_NUM                        int(4)
 // VERSION                          double(8)
+// MODULE FLAG                      1
 // CONST VALUE COUNT                int(4)
 // -------------CONST VALUE---------------
 // CONST TYPE                       byte(1)
@@ -214,3 +249,4 @@ void bytecode_writer::make()
 // |.............. *N ........................|
 // |------------------------------------------|
 // .............. *N .......................
+// MODULE END FLAG                     0

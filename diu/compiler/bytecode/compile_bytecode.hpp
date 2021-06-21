@@ -46,9 +46,9 @@ private:
     }
 
 public:
-    compile_bytecode(shared_ptr<AST> ast, string path) : ast(ast), path(path)
+    compile_bytecode(shared_ptr<AST> ast, shared_ptr<bytecode_writer> writer) : ast(ast), writer(writer)
     {
-        writer = make_shared<bytecode_writer>(path);
+        writer->being_new_module_file();
     }
     ~compile_bytecode() {}
 
@@ -84,7 +84,6 @@ public:
             auto pk = it.second;
             symbol_import_index[sy] = writer->reg_symbol(const_value_index[sy], pkg_import_index[pk]);
         }
-        
 
         for (auto &node : ast->nodes)
         {
@@ -109,8 +108,6 @@ public:
                 writer->write_node_stream(stream);
             }
         }
-
-        writer->make();
     }
 
 private:
