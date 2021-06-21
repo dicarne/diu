@@ -12,6 +12,9 @@ node Main{
 }
 
 node A2 {
+    fn new(){
+        sys:print("new !!")
+    }
     fn Hello() {
         sys:print("HELLO")
     }

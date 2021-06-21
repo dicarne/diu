@@ -340,7 +340,11 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             if (compiler_type::issignal(*it))
             {
                 tmp += *it;
-
+                if (*it == ')' || *it == '}' || *it == ']')
+                {
+                    it++;
+                    goto CompleteOPtoken;
+                }
                 it++;
                 continue;
             }
