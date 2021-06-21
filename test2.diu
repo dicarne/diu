@@ -1,4 +1,4 @@
-module "you"
+module you
 node n1{
     fn func() {
         sys:print("YES!")

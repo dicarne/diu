@@ -208,6 +208,12 @@ void AST::build_ast_from_tokens(deque<token_base *> tokens)
                     it++;
                     continue;
                 }
+                else if ((*it)->get_type() == token_types::name)
+                {
+                    module_name = static_cast<token_name *>(*it)->name;
+                    it++;
+                    continue;
+                }
                 else
                 {
                     throw compile_error("a module string should behind [module]", (*it)->line_num);
