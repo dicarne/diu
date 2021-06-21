@@ -10,7 +10,8 @@
 #include "Node.h"
 #include "codes/CodeEngine.hpp"
 #include "../compiler/bytecode/bytecode_reader.hpp"
-
+#include <list>
+using std::list;
 using std::make_shared;
 using std::shared_ptr;
 using std::unordered_map;
@@ -25,7 +26,8 @@ private:
     unordered_map<string, unordered_map<string, shared_ptr<Node>>> static_node;
     int64 node_index = 0;
     void AddNewNode(shared_ptr<Node> node);
-
+    unordered_map<int64, shared_ptr<Node>> running;
+    //unordered_map<int64, shared_ptr<Node>> completed;
 public:
     Engine(int version);
     ~Engine();
@@ -37,6 +39,7 @@ public:
     void SendMessage(NodeMessage *msg);
     void RunCode();
     void load(string byecode_file);
+    void ActiveNode(PID pid);
 };
 
 #endif

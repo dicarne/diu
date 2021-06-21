@@ -16,6 +16,7 @@ void Engine::AddNewNode(shared_ptr<Node> node)
     node_index++;
     node->Pid = PID(version, node_index);
     nodes[node->Pid.pid] = node;
+    running[node->Pid.pid] = node;
 }
 
 shared_ptr<Node> Engine::NewNode(string mod, string node_name)
@@ -87,6 +88,7 @@ void Engine::Run(string mod, string node, string func, shared_ptr<NodeMessage> m
         n->direct_call(m);
     }
 }
+
 void Engine::Run(PID node, shared_ptr<NodeMessage> msg)
 {
     auto find_n = nodes.find(node.pid);
@@ -98,27 +100,31 @@ void Engine::Run(PID node, shared_ptr<NodeMessage> msg)
         reply->callbackNode = msg->callbackNode;
         reply->name = msg->name;
         reply->args = msg->args;
-        find_n->second->messageBox->push(reply);
+        find_n->second->push_massage(reply);
     }
 }
+
 void Engine::SendMessage(NodeMessage *msg)
 {
     auto cb = msg->callbackNode;
     auto find_n = nodes.find(cb.pid);
     if (find_n != nodes.end())
     {
-        find_n->second->messageBox->push(msg);
+        find_n->second->push_massage(msg);
     }
 }
 
 void Engine::RunCode()
 {
     int index = 10;
-    while (index-- > 0)
+    bool all_complete = false;
+    while (!all_complete)
     {
-        for (auto &kv : nodes)
+        all_complete = true;
+        for (auto &kv : running)
         {
             kv.second->run_once();
+            all_complete &= !kv.second->active;
         }
     }
 }
@@ -127,4 +133,8 @@ void Engine::load(string byecode_file)
 {
     bytecode_reader br(byecode_file);
     br.read_all(this->codes);
+}
+
+void Engine::ActiveNode(PID pid)
+{
 }

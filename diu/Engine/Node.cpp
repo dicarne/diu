@@ -122,6 +122,10 @@ void Node::run_once()
         }
     }
     run_env.splice(run_env.begin(), waitting);
+    if (run_env.empty())
+    {
+        active = false;
+    }
 }
 shared_ptr<FuncEnv> Node::create_func(shared_ptr<NodeMessage> p)
 {
@@ -241,4 +245,14 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<NodeMessage> msg)
     auto f = create_func(msg);
     waitting_callback[msg->id] = caller;
     run_func(f);
+}
+
+void Node::push_massage(NodeMessage *msg)
+{
+    messageBox->push(msg);
+    if (active == false)
+    {
+        active = true;
+        engine->ActiveNode(Pid);
+    }
 }
