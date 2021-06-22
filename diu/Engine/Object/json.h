@@ -12,7 +12,7 @@ class Object;
 class json
 {
 private:
-    
+    static string decode_string(string str);
     static shared_ptr<Object> parse(std::deque<token_base *> &tokens, std::deque<token_base *>::iterator& it);
 public:
     json() {}

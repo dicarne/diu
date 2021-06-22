@@ -26,7 +26,8 @@ class FuncEnv;
 class Object
 {
 private:
-    /* data */
+    string encode_string(string str);
+
 public:
     var value;
     ObjectRawType type;
@@ -63,6 +64,11 @@ public:
     {
         this->type = ObjectRawType::Pid;
         value = pid;
+    }
+    Object(const char str[])
+    {
+        this->type = ObjectRawType::Str;
+        value = string(str);
     }
     Object(string str)
     {

@@ -55,7 +55,7 @@ shared_ptr<Object> json::parse(std::deque<token_base *> &tokens, std::deque<toke
     {
         auto it_str = static_cast<token_string *>(*it);
         it++;
-        return make_shared<Object>(it_str->content);
+        return make_shared<Object>(decode_string(it_str->content));
     }
     else if (it_type == token_types::number)
     {
@@ -67,4 +67,54 @@ shared_ptr<Object> json::parse(std::deque<token_base *> &tokens, std::deque<toke
         return make_shared<Object>(d);
     }
     return nullptr;
+}
+string json::decode_string(string str)
+{
+    stringstream ss;
+    bool escape = false;
+    for (auto c : str)
+    {
+        if (c == '\\')
+        {
+            if (escape)
+            {
+                ss << "\\";
+                escape = false;
+            }
+            else
+            {
+                escape = true;
+            }
+        }
+        else if (c == '"')
+        {
+            ss << '"';
+            escape = false;
+        }
+        else if (c == 'n')
+        {
+            if (escape)
+            {
+                ss << '\n';
+                escape = false;
+            }
+            else
+                ss << 'n';
+        }
+        else if (c == 't')
+        {
+            if (escape)
+            {
+                ss << '\t';
+                escape = false;
+            }
+            else
+                ss << 't';
+        }
+        else
+        {
+            ss << c;
+        }
+    }
+    return ss.str();
 }

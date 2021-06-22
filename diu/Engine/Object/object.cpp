@@ -75,7 +75,7 @@ string Object::to_string()
 
         break;
     case ObjectRawType::Str:
-        ss << "\"" << getv<string>() << "\"";
+        ss << "\"" << encode_string(getv<string>()) << "\"";
         break;
     case ObjectRawType::Pid:
     {
@@ -88,10 +88,14 @@ string Object::to_string()
     {
         ss << "{";
         auto j = getv<shared_ptr<json>>();
+        bool add_com = false;
         for (auto &kv : j->data)
         {
+            if (add_com)
+                ss << ",";
             ss << "\"" << kv.first << "\""
                << ":" << kv.second->to_string();
+            add_com = true;
         }
         ss << "}";
         break;
@@ -110,6 +114,23 @@ string Object::to_string()
     break;
     default:
         break;
+    }
+    return ss.str();
+}
+
+string Object::encode_string(string str)
+{
+    stringstream ss;
+    for (auto s : str)
+    {
+        if (s == '"')
+        {
+            ss << '\\' << '"';
+        }
+        else
+        {
+            ss << s;
+        }
     }
     return ss.str();
 }
