@@ -12,6 +12,8 @@
 #include <stack>
 #include <iostream>
 #include "Node.h"
+#include "Object/object.h"
+
 using std::cout;
 using std::endl;
 using std::make_shared;
@@ -20,6 +22,7 @@ using std::stack;
 using std::string;
 using std::unordered_map;
 class Node;
+class Object;
 class FuncEnv
 {
 private:

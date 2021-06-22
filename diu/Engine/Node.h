@@ -13,6 +13,7 @@
 #include "NodeMessage.hpp"
 #include "Engine.h"
 #include <iostream>
+#include "Object/object.h"
 
 using std::list;
 using std::make_shared;

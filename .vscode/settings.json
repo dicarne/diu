@@ -53,6 +53,7 @@
         "thread": "cpp",
         "chrono": "cpp",
         "list": "cpp",
-        "ratio": "cpp"
+        "ratio": "cpp",
+        "cinttypes": "cpp"
     }
 }

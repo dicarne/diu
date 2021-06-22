@@ -2,6 +2,7 @@
 #include "Engine/Engine.h"
 #include "Engine/codes/CodeEngine.hpp"
 #include "compiler/compiler.hpp"
+#include "Engine/Object/json.h"
 
 int main(int, char **)
 {

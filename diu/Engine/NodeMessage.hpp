@@ -5,6 +5,7 @@
 using std::string;
 using std::vector;
 #include "Type.hpp"
+#include "Object/object.h"
 
 enum class NodeMessageType
 {

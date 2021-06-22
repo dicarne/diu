@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include "bytecode/bytecode_writer.hpp"
-#include "lexer.hpp"
+#include "lexer.h"
 #include "ast/ast.hpp"
 #include "bytecode/compile_bytecode.hpp"
 
@@ -25,7 +25,7 @@ public:
         for (auto &file : sources)
         {
             lexer lex;
-            auto tokens = lex.process_char_buff(file, charset::utf8);
+            auto tokens = lex.process_file(file, charset::utf8);
             shared_ptr<AST> ast = make_shared<AST>();
             ast->build_ast_from_tokens(tokens);
             compile_bytecode compiler(ast, writer);
