@@ -51,7 +51,7 @@ void Node::run_once()
                 }
                 else
                 {
-                    auto nodemsg = new NodeMessage(NodeMessageType::Callback, "", sp->id, PID(sp->callbackNode), true);
+                    auto nodemsg = new NodeMessage(NodeMessageType::Callback, "", sp->id, PID(sp->callbackNode), sp->async_);
                     nodemsg->args.push_back(Object(Pid));
                     engine->SendMessage(nodemsg);
                 }
@@ -206,38 +206,36 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_
             return;
         }
 
-
         // Remote call
         auto v = msg->args;
         msg->args = vector<Object>();
-        for(auto &iv: v) {
+        for (auto &iv : v)
+        {
             msg->args.push_back(*(iv.clone()));
         }
         if (chain->size() == 1)
         {
-            if (!caller->code->mod.expired())
+
+            auto mod = caller->code->mod;
+            auto another_node = mod->nodes->find((*chain)[0]);
+            if (another_node != mod->nodes->end())
             {
-                auto mod = caller->code->mod.lock();
-                auto another_node = mod->nodes->find((*chain)[0]);
-                if (another_node != mod->nodes->end())
+                if (!msg->async_)
+                    waitting_callback[msg->id] = caller;
+                engine->Run(mod->module_name, (*chain)[0], msg->name, msg);
+                return;
+            }
+            else
+            {
+                auto pkg = mod->outer_symbol_pkg_map->find((*chain)[0]);
+                if (pkg != mod->outer_symbol_pkg_map->end())
                 {
-                    if (!msg->async_)
-                        waitting_callback[msg->id] = caller;
-                    engine->Run(mod->module_name, (*chain)[0], msg->name, msg);
-                    return;
+                    auto pkgname = pkg->second;
+                    chain->insert(chain->begin(), pkgname);
                 }
                 else
                 {
-                    auto pkg = mod->outer_symbol_pkg_map->find((*chain)[0]);
-                    if (pkg != mod->outer_symbol_pkg_map->end())
-                    {
-                        auto pkgname = pkg->second;
-                        chain->insert(chain->begin(), pkgname);
-                    }
-                    else
-                    {
-                        throw runtime_error("Remote call error here");
-                    }
+                    throw runtime_error("Remote call error here");
                 }
             }
         }
@@ -245,22 +243,20 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_
         {
             if (!msg->async_)
                 waitting_callback[msg->id] = caller;
-            if (!caller->code->mod.expired())
-            {
-                auto mod = caller->code->mod.lock();
-                auto pkg = (*chain)[0];
 
-                auto modules = engine->codes->modules;
-                auto fmod = modules.find(pkg);
-                if (fmod != modules.end())
-                {
-                    engine->Run(pkg, (*chain)[1], msg->name, msg);
-                    return;
-                }
-                else
-                {
-                    throw runtime_error("Can't find module pkg: " + pkg);
-                }
+            auto mod = caller->code->mod;
+            auto pkg = (*chain)[0];
+
+            auto modules = engine->codes->modules;
+            auto fmod = modules.find(pkg);
+            if (fmod != modules.end())
+            {
+                engine->Run(pkg, (*chain)[1], msg->name, msg);
+                return;
+            }
+            else
+            {
+                throw runtime_error("Can't find module pkg: " + pkg);
             }
         }
     }

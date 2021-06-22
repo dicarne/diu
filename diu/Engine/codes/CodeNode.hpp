@@ -18,7 +18,7 @@ public:
     ~CodeNode() {}
 
     string name;
-    std::weak_ptr<CodeCodePage> mod;
+    std::shared_ptr<CodeCodePage> mod;
 
     unordered_map<string, shared_ptr<CodeFunc>> funcs;
 };

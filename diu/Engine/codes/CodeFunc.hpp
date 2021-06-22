@@ -20,8 +20,8 @@ public:
         int arg_type;
     };
     vector<opcomd> codes;
-    std::weak_ptr<CodeNode> node;
-    std::weak_ptr<CodeCodePage> mod;
+    shared_ptr<CodeNode> node;
+    shared_ptr<CodeCodePage> mod;
     vector<arg> args;
     string name;
     CodeFunc(/* args */) {}
