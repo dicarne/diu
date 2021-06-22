@@ -1,10 +1,50 @@
 #include "Engine.h"
 
+RunEngine::RunEngine()
+{
+    running = make_shared<LockFreeArrayQueue<Node *>>(10000);
+}
+
+void RunEngine::run_once()
+{
+    while (true)
+    {
+        if (!running->isEmpty())
+        {
+            Node *node;
+            running->pop(node);
+            node->run_once();
+            running->push(node);
+        }
+    }
+}
+
+class NodeExec
+{
+public:
+    shared_ptr<RunEngine> node;
+    NodeExec(shared_ptr<RunEngine> node) : node(node) {}
+    void run()
+    {
+        node->run_once();
+    }
+};
+
 Engine::Engine(int version)
 {
     this->version = version;
     this->codes = make_shared<CodeEngine>();
-    ;
+    auto thread_count = 4;
+    this->thread_pool = make_shared<ThreadPool>(thread_count);
+    this->thread_pool->init();
+
+    for (auto i = 0; i < thread_count; i++)
+    {
+        auto e = make_shared<RunEngine>();
+        run_engines.push_back(e);
+        NodeExec exec(e);
+        thread_pool->submit(std::mem_fn(&NodeExec::run), exec);
+    }
 }
 
 Engine::~Engine()
@@ -13,10 +53,13 @@ Engine::~Engine()
 
 void Engine::AddNewNode(shared_ptr<Node> node)
 {
+    node->active = false;
     node_index++;
     node->Pid = PID(version, node_index);
     nodes[node->Pid.pid] = node;
-    running[node->Pid.pid] = node;
+    run_engines[engine_index]->running->push(node.get());
+    engine_index = (engine_index + 1) % run_engines.size();
+    //running[node->Pid.pid] = node;
 }
 
 shared_ptr<Node> Engine::NewNode(string mod, string node_name)
@@ -28,9 +71,9 @@ shared_ptr<Node> Engine::NewNode(string mod, string node_name)
     if (codenode == codemod->second->node_to_code_page.end())
         throw runtime_error("can't find node " + node_name + " in module " + mod);
     auto node = make_shared<Node>();
-    AddNewNode(node);
     node->engine = this;
     node->load_code(codenode->second);
+    AddNewNode(node);
     node->init();
     return node;
 }
@@ -102,17 +145,23 @@ void Engine::SendMessage(NodeMessage *msg)
 
 void Engine::RunCode()
 {
-    int index = 10;
-    bool all_complete = false;
-    while (!all_complete)
-    {
-        all_complete = true;
-        for (auto &kv : running)
-        {
-            kv.second->run_once();
-            all_complete &= !kv.second->active;
-        }
-    }
+    thread_pool->shutdown();
+    // int index = 10;
+    // bool all_complete = false;
+    // while (!all_complete)
+    // {
+    //     //all_complete = true;
+    //     for (auto &kv : running)
+    //     {
+    //         if (kv.second->active)
+    //         {
+    //             NodeExec exec(kv.second);
+    //             thread_pool->submit(std::mem_fn(&NodeExec::run), exec);
+    //         }
+    //         //kv.second->run_once();
+    //         //all_complete &= !kv.second->active;
+    //     }
+    // }
 }
 
 void Engine::load(string byecode_file)

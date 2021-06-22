@@ -11,12 +11,22 @@
 #include "codes/CodeEngine.hpp"
 #include "../compiler/bytecode/bytecode_reader.hpp"
 #include <list>
+#include "ThreadPool.hpp"
+#include "util/LockFreeQueue.hpp"
+
 using std::list;
 using std::make_shared;
 using std::shared_ptr;
 using std::unordered_map;
-
 class Node;
+class RunEngine
+{
+public:
+    RunEngine();
+    shared_ptr<LockFreeArrayQueue<Node *>> running;
+    void run_once();
+};
+
 class Engine
 {
 private:
@@ -26,8 +36,12 @@ private:
     unordered_map<string, unordered_map<string, shared_ptr<Node>>> static_node;
     int64 node_index = 0;
     void AddNewNode(shared_ptr<Node> node);
-    unordered_map<int64, shared_ptr<Node>> running;
+    //unordered_map<int64, shared_ptr<Node>> running;
     //unordered_map<int64, shared_ptr<Node>> completed;
+    shared_ptr<ThreadPool> thread_pool;
+    vector<shared_ptr<RunEngine>> run_engines;
+    int engine_index = 0;
+
 public:
     Engine(int version);
     ~Engine();

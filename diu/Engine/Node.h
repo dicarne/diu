@@ -35,7 +35,6 @@ private:
     int func_index = 0;
     unordered_map<int, FuncEnv *> waitting_callback;
     LockFreeArrayQueue<NodeMessage *> *messageBox;
-    
 public:
     PID Pid;
     bool active = true;

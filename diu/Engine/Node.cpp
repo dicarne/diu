@@ -26,6 +26,7 @@ void Node::direct_call(NodeMessage message)
     {
         auto mp = new NodeMessage(message);
         messageBox->push(mp);
+        active = true;
     }
 }
 
@@ -80,7 +81,7 @@ void Node::run_once()
                 {
                     if (f->id == sp->id)
                     {
-                        f->handle_async_callback(sp->args[0], sp->args[1]);
+                        f->handle_async_callback(sp->args[0], sp->async_);
                         break;
                     }
                 }
@@ -141,7 +142,7 @@ void Node::run_once()
         }
     }
     run_env.splice(run_env.begin(), waitting);
-    if (run_env.empty())
+    if (run_env.empty() && messageBox->isEmpty())
     {
         active = false;
     }
