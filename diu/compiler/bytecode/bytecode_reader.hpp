@@ -128,7 +128,7 @@ public:
             auto symbol_name_index = read<int>();
             auto package_index = read<int>();
             (*mod->outer_symbol_pkg_index_map)[symbol_name_index] = package_index;
-            (*mod->outer_symbol_pkg_map)[(*mod->const_string)[symbol_name_index]] = (*mod->const_string)[package_index];
+            (*mod->outer_symbol_pkg_map)[(*mod->const_string)[symbol_name_index]] = (*mod->const_string)[(*mod->package_index_map)[package_index]];
 
             cout << (*mod->const_string)[symbol_name_index] << " : " << (*mod->const_string)[(*mod->package_index_map)[package_index]] << endl;
         }

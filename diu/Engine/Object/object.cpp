@@ -24,8 +24,8 @@ shared_ptr<Object> Object::copy()
     case ObjectRawType::TypeSymbol:
     {
         auto symbols = std::get<shared_ptr<vector<string>>>(value);
-        auto newsymbols = std::get<shared_ptr<vector<string>>>(p->value);
-        for (auto &s : *symbols)
+        auto &newsymbols = std::get<shared_ptr<vector<string>>>(p->value);
+        for (auto s : *symbols)
         {
             newsymbols->push_back(s);
         }
