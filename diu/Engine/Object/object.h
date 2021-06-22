@@ -104,6 +104,7 @@ public:
     }
 
     shared_ptr<Object> copy();
+    shared_ptr<Object> clone();
 
     bool as_bool()
     {

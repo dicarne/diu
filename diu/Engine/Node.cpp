@@ -204,6 +204,14 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_
             caller->ret = make_shared<Object>(0);
             return;
         }
+
+
+        // Remote call
+        auto v = msg->args;
+        msg->args = vector<Object>();
+        for(auto &iv: v) {
+            msg->args.push_back(*(iv.clone()));
+        }
         if (chain->size() == 1)
         {
             if (!caller->code->mod.expired())

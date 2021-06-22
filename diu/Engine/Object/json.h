@@ -19,6 +19,7 @@ public:
     ~json() {}
     unordered_map<string, shared_ptr<Object>> data;
     static shared_ptr<Object> from(string str);
+    shared_ptr<json> clone();
 };
 
 #endif

@@ -118,3 +118,13 @@ string json::decode_string(string str)
     }
     return ss.str();
 }
+
+shared_ptr<json> json::clone()
+{
+    auto j = make_shared<json>();
+    for (auto &kv : data)
+    {
+        j->data[kv.first] = kv.second->clone();
+    }
+    return j;
+}

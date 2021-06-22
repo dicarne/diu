@@ -136,3 +136,41 @@ string Object::encode_string(string str)
     }
     return ss.str();
 }
+
+shared_ptr<Object> Object::clone()
+{
+    auto p = make_shared<Object>(type);
+    switch (type)
+    {
+    case ObjectRawType::Num:
+        p->value = std::get<double>(value);
+        break;
+    case ObjectRawType::Bool:
+        p->value = std::get<double>(value);
+        break;
+    case ObjectRawType::Str:
+        p->value = std::get<string>(value);
+        break;
+    case ObjectRawType::Pid:
+        p->value = std::get<PID>(value);
+        break;
+    case ObjectRawType::Struct:
+    {
+        p->value = std::get<shared_ptr<json>>(value)->clone();
+    }
+    break;
+    case ObjectRawType::TypeSymbol:
+    {
+        auto symbols = std::get<shared_ptr<vector<string>>>(value);
+        auto &newsymbols = std::get<shared_ptr<vector<string>>>(p->value);
+        for (auto s : *symbols)
+        {
+            newsymbols->push_back(s);
+        }
+    }
+    break;
+    default:
+        break;
+    }
+    return p;
+}
