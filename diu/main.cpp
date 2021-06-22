@@ -12,8 +12,8 @@ int main(int, char **)
     compiler::compile("test.diuc", files);
 
     Engine e = Engine(ENGINE_VERSION);
-    e.load("test.diuc");
-    e.Run("my", "Main", "main");
+    e.Config("config.json");
+    e.Load("test.diuc");
     e.RunCode();
     return 0;
 }

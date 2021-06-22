@@ -145,6 +145,7 @@ void Engine::SendMessage(NodeMessage *msg)
 
 void Engine::RunCode()
 {
+    Run(main_module, main_node, main_func);
     thread_pool->shutdown();
     // int index = 10;
     // bool all_complete = false;
@@ -164,7 +165,7 @@ void Engine::RunCode()
     // }
 }
 
-void Engine::load(string byecode_file)
+void Engine::Load(string byecode_file)
 {
     bytecode_reader br(byecode_file);
     br.read_all(this->codes);
@@ -172,4 +173,27 @@ void Engine::load(string byecode_file)
 
 void Engine::ActiveNode(PID pid)
 {
+}
+
+#include <fstream>
+void Engine::Config(string config_file_path)
+{
+    std::stringstream ss;
+    std::ifstream fs(config_file_path);
+    while (!fs.eof())
+    {
+        auto c = fs.get();
+        if (c == -1)
+            break;
+        ss << char(c);
+    }
+    auto s = ss.str();
+    auto conf = json::from(s);
+    auto main = conf->get_child("main");
+    if (main->as_bool())
+    {
+        main_module = main->get_child("module")->get_str_or_default("__GLOBAL__");
+        main_node = main->get_child("node")->get_str_or_default("Main");
+        main_func = main->get_child("func")->get_str_or_default("main");
+    }
 }

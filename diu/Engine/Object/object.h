@@ -147,6 +147,22 @@ public:
         return std::get<T>(this->value);
     }
 
+    string get_str_or_default(string default_)
+    {
+        if (type == ObjectRawType::Str)
+            return getv<string>();
+        else
+            return default_;
+    }
+
+    double get_num()
+    {
+        if (type == ObjectRawType::Num)
+            return getv<double>();
+        else
+            return 0;
+    }
+
     static shared_ptr<Object> add(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
     {
         if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)

@@ -1,0 +1,8 @@
+{
+    "engine": 1.0,
+    "main": {
+        "module": "my",
+        "node": "Main",
+        "func": "main"
+    }
+}

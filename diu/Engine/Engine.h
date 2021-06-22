@@ -41,7 +41,9 @@ private:
     shared_ptr<ThreadPool> thread_pool;
     vector<shared_ptr<RunEngine>> run_engines;
     int engine_index = 0;
-
+    string main_module;
+    string main_func;
+    string main_node;
 public:
     Engine(int version);
     ~Engine();
@@ -52,8 +54,9 @@ public:
     shared_ptr<Node> NewNode(string mod, string node);
     void SendMessage(NodeMessage *msg);
     void RunCode();
-    void load(string byecode_file);
+    void Load(string byecode_file);
     void ActiveNode(PID pid);
+    void Config(string config_file_path);
 };
 
 #endif
