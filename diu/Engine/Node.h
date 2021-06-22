@@ -35,11 +35,12 @@ private:
     int func_index = 0;
     unordered_map<int, FuncEnv *> waitting_callback;
     LockFreeArrayQueue<NodeMessage *> *messageBox;
-
+    
 public:
     PID Pid;
     bool active = true;
     Engine *engine;
+    shared_ptr<Object> self;
     Node();
     ~Node();
 
@@ -51,6 +52,7 @@ public:
     void init()
     {
         active = true;
+        self = make_shared<Object>(ObjectRawType::Struct);
     }
 
     void push_massage(NodeMessage *msg);

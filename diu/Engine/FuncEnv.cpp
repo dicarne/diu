@@ -357,3 +357,22 @@ void FuncEnv::run(int &limit)
         }
     }
 }
+void FuncEnv::init(shared_ptr<CodeFunc> c, shared_ptr<NodeMessage> m)
+{
+    code = c;
+    cur = 0;
+    completed = false;
+    failed = false;
+    if (!code->mod.expired())
+    {
+        auto env = code->mod.lock();
+        int index = 0;
+        for (auto &a : code->args)
+        {
+            local_var[(*env->const_string)[a.arg_name]] = make_shared<Object>(m->args[index]);
+            index++;
+        }
+        name = code->name;
+    }
+    local_var["this"] = node->self;
+}

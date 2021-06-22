@@ -156,12 +156,12 @@ shared_ptr<FuncEnv> Node::create_func(shared_ptr<NodeMessage> p)
         throw runtime_error("Can not find func: " + p->name + " in " + code_page->name);
     }
     auto fr = make_shared<FuncEnv>();
-    fr->init(fc->second, p);
     fr->id = func_index;
     fr->node = this;
     fr->callback_id = p->id;
     fr->callback_node = p->callbackNode;
     fr->async_call = p->async_;
+    fr->init(fc->second, p);
     return fr;
 }
 
