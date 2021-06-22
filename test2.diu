@@ -1,9 +1,11 @@
 module you
+
 node n1{
-    static fn func() {
-        sys:print("YES!")
+    fn func(hello: O) {
+        hello.num = 1
     }
-    static fn func2() {
-        sys:print("NO!")
-    }
+    // static fn func2() {
+    //     // a.num = 1
+    //     // sys:print("NO!")
+    // }
 }

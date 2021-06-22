@@ -12,8 +12,8 @@ class ast_assign
 private:
     /* data */
 public:
-    bool newsymbol;
-    string name;
+    bool newsymbol = false;
+    string name = "";
     vector<string> object_chain;
     shared_ptr<ast_expr> expr;
     ast_assign(/* args */);
