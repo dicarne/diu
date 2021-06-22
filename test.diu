@@ -3,7 +3,9 @@ from you use {n1}
 
 node Main {             // 声明一个节点
     fn main() {         // 声明一个函数
-        n1:func()
+        let a = {}
+        a.hello = 0
+        sys:print(a.hello)
     }
     fn add(a: num, b: num) {
         return a + b

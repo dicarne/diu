@@ -192,6 +192,18 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_
             caller->ret = make_shared<Object>(0);
             return;
         }
+        if (chain->size() == 1 && (*chain)[0] == "O")
+        {
+            if (msg->name == "new")
+            {
+                caller->waitting = false;
+                caller->ret = make_shared<Object>(ObjectRawType::Struct);
+                return;
+            }
+            caller->waitting = false;
+            caller->ret = make_shared<Object>(0);
+            return;
+        }
         if (chain->size() == 1)
         {
             if (!caller->code->mod.expired())

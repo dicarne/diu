@@ -57,7 +57,9 @@ shared_ptr<Object> Object::get_child(string name)
     auto f = j->data.find(name);
     if (f == j->data.end())
     {
-        return make_shared<Object>(ObjectRawType::Null);
+        auto n = make_shared<Object>(ObjectRawType::Null);
+        j->data[name] = n;
+        return n;
     }
     return f->second;
 }

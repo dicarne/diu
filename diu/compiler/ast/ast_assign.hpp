@@ -15,7 +15,6 @@ public:
     bool newsymbol;
     string name;
     vector<string> object_chain;
-    op_type assign_type;
     shared_ptr<ast_expr> expr;
     ast_assign(/* args */);
     ~ast_assign();

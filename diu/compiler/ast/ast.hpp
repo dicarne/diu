@@ -387,7 +387,7 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                     let_assign->name = static_cast<token_name *>(*fi)->name;
                     let_assign->newsymbol = true;
                     fi++; // eat =
-                    if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::asi_))
+                    if ((*fi)->get_type() != token_types::op || static_cast<token_op *>(*fi)->type != op_type::asi_)
                     {
                         throw compile_error("= should follow [let]", (*fi)->line_num);
                     }
@@ -415,7 +415,7 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                 fi++;
                 ast_statement stat;
                 stat.statemen_type = ast_statement::type::if_;
-                if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::slb_))
+                if ((*fi)->get_type() != token_types::op || static_cast<token_op *>(*fi)->type != op_type::slb_)
                 {
                     throw compile_error("[(] should follow if", (*fi)->line_num);
                 }
@@ -424,7 +424,7 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                 auto cond_if = cond.begin();
                 stat.if_->cond = get_next_expr(cond_if, cond);
 
-                if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::llb_))
+                if ((*fi)->get_type() != token_types::op || static_cast<token_op *>(*fi)->type != op_type::llb_)
                 {
                     throw compile_error("[{] should follow if(...)", (*fi)->line_num);
                 }
@@ -436,7 +436,7 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                     fi++;
                     ast_if elif_;
 
-                    if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::slb_))
+                    if ((*fi)->get_type() != token_types::op || static_cast<token_op *>(*fi)->type != op_type::slb_)
                     {
                         throw compile_error("[(] should follow elif", (*fi)->line_num);
                     }
@@ -444,7 +444,7 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                     auto el_cond_it = el_cond.begin();
                     elif_.cond = get_next_expr(el_cond_it, el_cond);
 
-                    if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::llb_))
+                    if ((*fi)->get_type() != token_types::op || static_cast<token_op *>(*fi)->type != op_type::llb_)
                     {
                         throw compile_error("[{] should follow elif(...)", (*fi)->line_num);
                     }
@@ -455,7 +455,7 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                 if (fi != func_body_tokens.end() && (*fi)->get_type() == token_types::keyword && static_cast<token_keyword *>(*fi)->type == keyword_type::else_)
                 {
                     fi++;
-                    if (!((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::llb_))
+                    if ((*fi)->get_type() != token_types::op || static_cast<token_op *>(*fi)->type != op_type::llb_)
                     {
                         throw compile_error("[{] should follow else", (*fi)->line_num);
                     }
@@ -769,6 +769,19 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
                 }
                 break;
             }
+            return maybe_binary(expr, 0, it, tokens);
+        }
+    }
+    if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::llb_)
+    {
+        // TODO: 构造对象，只支持{}，相当于O:new()
+        it++;
+        if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::lrb_)
+        {
+            it++;
+            expr->expr_type = ast_expr::type::func_call;
+            expr->caller.push_back("O");
+            expr->func_name = "new";
             return maybe_binary(expr, 0, it, tokens);
         }
     }
