@@ -17,16 +17,16 @@ enum ObjectRawType
     Str,        // !
     Struct,     // !
     TypeSymbol, // !
-    Await
+    Await,      // !
 };
 class json;
 class Object;
-typedef variant<int, PID, shared_ptr<json>, double, bool, string, shared_ptr<vector<string>>, vector<shared_ptr<Object>>, shared_ptr<Object>, unordered_map<string, shared_ptr<Object>>> var;
+typedef variant<int, PID, shared_ptr<json>, double, bool, string, shared_ptr<vector<string>>> var;
 class FuncEnv;
 class Object
 {
 private:
-    string encode_string(string str);
+    static string encode_string(string str);
 
 public:
     var value;
@@ -112,6 +112,15 @@ public:
             if (std::get<double>(value) == 0)
                 return false;
         }
+        else if (type == ObjectRawType::Null)
+        {
+            return false;
+        }
+        else if (type == ObjectRawType::Str)
+        {
+            return getv<string>() == "";
+        }
+
         return true;
     }
 

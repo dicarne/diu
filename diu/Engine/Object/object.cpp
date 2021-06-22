@@ -57,7 +57,7 @@ shared_ptr<Object> Object::get_child(string name)
     auto f = j->data.find(name);
     if (f == j->data.end())
     {
-        throw runtime_error("Can't find this child: " + name);
+        return make_shared<Object>(ObjectRawType::Null);
     }
     return f->second;
 }
