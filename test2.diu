@@ -1,15 +1,15 @@
-module you
+// module you
 
-node n1{
-    fn func() {
-        sys:print(2)
-        run func()
-    }
-    // static fn func2() {
-    //     // a.num = 1
-    //     // sys:print("NO!")
-    // }
-    fn echo() {
-        sys:print("HELLO")
-    }
-}
+// node n1{
+//     fn func() {
+//         sys:print(2)
+//         run func()
+//     }
+//     // static fn func2() {
+//     //     // a.num = 1
+//     //     // sys:print("NO!")
+//     // }
+//     fn echo() {
+//         sys:print("HELLO")
+//     }
+// }

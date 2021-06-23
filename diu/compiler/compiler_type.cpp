@@ -13,7 +13,7 @@ const unordered_set<char32_t> compiler_type::signals = {
     '?', ';'};
 
 const unordered_map<op_type, int> compiler_type::PRECEDENCE = {
-    {op_type::asi_, 1},
+    //{op_type::asi_, 1},
     {op_type::or_, 2},
     {op_type::and_, 3},
     {op_type::lt_, 7},

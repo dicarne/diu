@@ -11,7 +11,7 @@ enum class opcode : opcode_type
     NONE = 0,
     VERSION = 1,
     LET = 8,                  // 将栈顶赋值给名字索引对应的变量 LET 0 NAME_INDEX
-    LET_C = 9,                // 将栈顶赋值给栈顶名字索引对应的变量 LET 0 NAME_INDEX （查找对象
+    LET_C = 9,                // 将栈顶赋值给栈顶名字索引对应的变量 LET 0 0 （查找对象 // TODO:
     VAR = 10,                 // 声明一个新变量，将变量名加入局部变量表中，并申请一个新的空间 VAR 0 NAME_INDEX
     LOAD = 11,                // 将一个常量读取，按照类型初始化，并加入栈顶 LOAD 0 NAME_INDEX
     VAR_FIND = 12,            // 根据名字，查找符号，若找到，则加入栈顶 VAR_FIND 0 NAME_INDEX

@@ -384,7 +384,10 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                 fi++;
                 if ((*fi)->get_type() == token_types::name)
                 {
-                    let_assign->name = static_cast<token_name *>(*fi)->name;
+                    auto of = make_shared<ast_expr>();
+                    of->expr_type = ast_expr::type::object_chain;
+                    of->caller.push_back(static_cast<token_name *>(*fi)->name);
+                    let_assign->object_find = of;
                     let_assign->newsymbol = true;
                     fi++; // eat =
                     if ((*fi)->get_type() != token_types::op || static_cast<token_op *>(*fi)->type != op_type::asi_)
@@ -481,12 +484,6 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                 statements.push_back(stat);
                 continue;
             }
-            else if (token->type == keyword_type::run_)
-            {
-                fi++;
-                RUN_FUNC_FLAG = true;
-                goto BgeinFuncCall;
-            }
             else
             {
                 // Another keywords
@@ -495,27 +492,19 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
         }
         if ((*fi)->get_type() == token_types::name)
         {
-        BgeinFuncCall:
             auto start = fi;
-            vector<string> name_chain;
-            string name = "";
-            while ((*fi)->get_type() != token_types::op)
+            auto expr = get_next_expr(fi, func_body_tokens);
+
+            if (expr->expr_type == ast_expr::type::func_call || expr->expr_type == ast_expr::type::func_call_run)
             {
-                auto unk_name = static_cast<token_name *>(*fi)->name;
-                name_chain.push_back(unk_name);
-                fi++;
-                if ((*fi)->get_type() == token_types::op && static_cast<token_op *>(*fi)->type == op_type::dot_)
-                {
-                    fi++;
-                }
-            }
-            if (name_chain.size() == 1)
-            {
-                name = name_chain[0];
-                name_chain.clear();
+                ast_statement stat;
+                stat.statemen_type = ast_statement::type::expr;
+                stat.expr = expr;
+                statements.push_back(stat);
+                continue;
             }
 
-            if ((*fi)->get_type() == token_types::op)
+            if ((expr->expr_type == ast_expr::type::object_chain || expr->expr_type == ast_expr::type::find_child) && (*fi)->get_type() == token_types::op)
             {
                 auto nop = static_cast<token_op *>(*fi);
                 if (nop->type == op_type::asi_)
@@ -527,27 +516,26 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                     // handle remain statement
                     let_assign->expr = get_next_expr(fi, func_body_tokens);
                     stat.statemen_type = ast_statement::type::assign;
-                    let_assign->object_chain = name_chain;
-                    let_assign->name = name;
+                    let_assign->object_find = expr;
                     stat.assign = let_assign;
                     statements.push_back(stat);
                     continue;
                 }
-                else if (nop->type == op_type::slb_ || nop->type == op_type::pair_)
-                {
-                    // A(... func call
-                    fi = start;
-                    ast_statement stat;
-                    auto expr = get_next_expr(fi, func_body_tokens);
-                    if (RUN_FUNC_FLAG)
-                    {
-                        expr->expr_type = ast_expr::type::func_call_run;
-                    }
-                    stat.statemen_type = ast_statement::type::expr;
-                    stat.expr = expr;
-                    statements.push_back(stat);
-                    continue;
-                }
+                // else if (nop->type == op_type::slb_ || nop->type == op_type::pair_)
+                // {
+                //     // A(... func call
+                //     fi = start;
+                //     ast_statement stat;
+                //     auto expr = get_next_expr(fi, func_body_tokens);
+                //     if (RUN_FUNC_FLAG)
+                //     {
+                //         expr->expr_type = ast_expr::type::func_call_run;
+                //     }
+                //     stat.statemen_type = ast_statement::type::expr;
+                //     stat.expr = expr;
+                //     statements.push_back(stat);
+                //     continue;
+                // }
                 else
                 {
                     throw compile_error("unknown op after name", (*fi)->line_num);
@@ -618,9 +606,17 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
         RUN_FLAG = true;
         it++;
     }
+    if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::dot_)
+    {
+        it++;
+        expr->start_with_dot = true;
+        goto OBJECT_CHAIN;
+    }
     if ((*it)->get_type() == token_types::name)
     {
+    OBJECT_CHAIN:
         expr->expr_type = ast_expr::type::object_chain;
+
         expr->caller.push_back(static_cast<token_name *>(*it)->name);
         it++;
 
@@ -712,12 +708,34 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
             // a[b]
             expr->expr_type = ast_expr::type::find_child;
             it++;
-            expr->here = get_next_expr(it, tokens);
+            expr->left = get_next_expr(it, tokens);
             if ((*it)->get_type() != token_types::op || static_cast<token_op *>(*it)->type != op_type::mrb_)
             {
                 throw compile_error("[]] should behind a[b]", (*it)->line_num);
             }
             it++;
+            if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::dot_)
+            {
+                expr->right = get_next_expr(it, tokens);
+            }
+            if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::mlb_)
+            {
+                auto e = get_next_expr(it, tokens);
+                if (e->expr_type == ast_expr::type::array_ && e->array.size() == 1)
+                {
+                    auto r = make_shared<ast_expr>();
+                    r->expr_type = ast_expr::type::find_child;
+                    r->left = e->array[0];
+                    expr->right = r;
+                    it++;
+                }
+                else
+                {
+                    throw compile_error("a[][] error", (*it)->line_num);
+                }
+            }
+            //
+            return maybe_binary(expr, 0, it, tokens);
         }
 
         return maybe_binary(expr, 0, it, tokens);

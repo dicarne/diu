@@ -38,12 +38,11 @@ public:
     // 表达式左子树
     shared_ptr<ast_expr> left;
     shared_ptr<ast_expr> right;
-    // 值表达式
-    shared_ptr<ast_expr> here;
 
     op_type op;
 
     type expr_type;
+    bool start_with_dot = false; // 处理a.b[c].d
 };
 
 ast_expr::ast_expr(/* args */)

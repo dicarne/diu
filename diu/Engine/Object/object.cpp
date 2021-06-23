@@ -59,6 +59,11 @@ void Object::set_child(string name, shared_ptr<Object> value)
 
 shared_ptr<Object> Object::get_child(string name)
 {
+    if (type == ObjectRawType::Null)
+    {
+        type == ObjectRawType::Struct;
+        this->value = make_shared<json>();
+    }
     if (type != ObjectRawType::Struct)
     {
         throw runtime_error("Can't get child in a simple value");

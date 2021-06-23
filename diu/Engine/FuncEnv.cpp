@@ -45,12 +45,11 @@ void FuncEnv::run(int &limit)
             break;
             case opcode::LET_C:
             {
-                auto name = (*env->const_string)[c.data];
-                auto pre_obj = runtime.top();
+                auto target = runtime.top();
                 runtime.pop();
                 auto value = runtime.top();
                 runtime.pop();
-                pre_obj->get_child(name)->set(value->copy());
+                target->set(value->type, value->value);
             }
             break;
             case opcode::VAR:

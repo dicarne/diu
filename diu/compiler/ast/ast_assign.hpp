@@ -13,9 +13,11 @@ private:
     /* data */
 public:
     bool newsymbol = false;
-    string name = "";
-    vector<string> object_chain;
+    //string name = "";
+    //vector<string> object_chain;
     shared_ptr<ast_expr> expr;
+    shared_ptr<ast_expr> object_find;
+    bool start_with_dot = false;
     ast_assign(/* args */);
     ~ast_assign();
 };

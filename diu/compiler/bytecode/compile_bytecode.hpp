@@ -121,55 +121,23 @@ private:
                 auto &ass = ss->assign;
                 if (ass->newsymbol)
                 {
-                    write_op(stream, opcode::VAR, 0, get_const_index(ass->name));
+                    write_op(stream, opcode::VAR, 0, get_const_index(ass->object_find->caller[0]));
                     //cout << "[VAR] " << ass->name << endl;
                 }
-                bool ins = false;
-                if (ass->expr->expr_type == ast_expr::type::instance_num || ass->expr->expr_type == ast_expr::type::instance_string)
-                {
-                    ins = true;
-                }
-                else
-                {
-                    run_expr(stream, ass->expr);
-                }
-                if (ins)
-                {
-                    if (ass->expr->expr_type == ast_expr::type::instance_num)
-                    {
-                        write_op(stream, opcode::LOAD, 0, get_const_double_index(ass->expr->ins_value));
-                        //cout << "[LOAD] to [NUMI] " << ass->expr->ins_value << " at " << get_const_double_index(ass->expr->ins_value) << endl;
-                    }
-                    if (ass->expr->expr_type == ast_expr::type::instance_string)
-                    {
-                        write_op(stream, opcode::LOAD, 0, get_const_index(ass->expr->ins_value));
-                        //cout << "[LOAD] to [STRI] " << ass->expr->ins_value << " at " << get_const_index(ass->expr->ins_value) << endl;
-                    }
-                }
 
-                if (ass->name == "")
+                run_expr(stream, ass->expr);
+                // if (ass->object_find == "")
+                if (ass->object_find->left != nullptr)
                 {
-                    for (auto i = 0; i < ass->object_chain.size() - 1; i++)
-                    {
-                        if (i == 0)
-                        {
-                            write_op(stream, opcode::VAR_FIND, 0, get_const_index(ass->object_chain[i]));
-                            //cout << "[VAR_FIND] " + ass->object_chain[i] << " " << get_const_index(ass->object_chain[i]) << endl;
-                        }
-                        else
-                        {
-                            write_op(stream, opcode::VAR_FIND_C, 0, get_const_index(ass->object_chain[i]));
-                            //cout << "[VAR_FIND_C] " + ass->object_chain[i] << " " << get_const_index(ass->object_chain[i]) << endl;
-                        }
-                    }
+                    run_expr(stream, ass->object_find);
                     //write_op(stream, opcode::VAR_FIND_C, 0, get_const_index(ass->object_chain[ass->object_chain.size() - 1]));
-                    write_op(stream, opcode::LET_C, 0, get_const_index(ass->object_chain[ass->object_chain.size() - 1]));
+                    write_op(stream, opcode::LET_C, 0, 0);
                     //cout << "[LET_C] " << ass->object_chain[ass->object_chain.size() - 1] << " = [TOP]" << endl;
                 }
                 else
                 {
                     //write_op(stream, opcode::VAR_FIND, 0, get_const_index(ass->name));
-                    write_op(stream, opcode::LET, 0, get_const_index(ass->name));
+                    write_op(stream, opcode::LET, 0, get_const_index(ass->object_find->caller[0]));
                     //cout << "[LET] " << ass->name << " at " << get_const_index(ass->name) << " = [TOP]" << endl;
                 }
             }
@@ -293,7 +261,7 @@ private:
             {
                 if (i == 0)
                 {
-                    write_op(stream, opcode::VAR_FIND, 0, get_const_index(expr->caller[i]));
+                    write_op(stream, expr->start_with_dot ? opcode::VAR_FIND_C : opcode::VAR_FIND, 0, get_const_index(expr->caller[i]));
                     //cout << "[VAR_FIND] " + expr->caller[i] << " " << get_const_index(expr->caller[i]) << endl;
                 }
                 else
@@ -310,7 +278,7 @@ private:
             {
                 if (i == 0)
                 {
-                    write_op(stream, opcode::VAR_FIND, 0, get_const_index(expr->caller[i]));
+                    write_op(stream, expr->start_with_dot ? opcode::VAR_FIND_C : opcode::VAR_FIND, 0, get_const_index(expr->caller[i]));
                     //cout << "[VAR_FIND] " + expr->caller[i] << " " << get_const_index(expr->caller[i]) << endl;
                 }
                 else
@@ -335,7 +303,7 @@ private:
             {
                 if (i == 0)
                 {
-                    write_op(stream, opcode::VAR_FIND, 0, get_const_index(expr->caller[i]));
+                    write_op(stream, expr->start_with_dot ? opcode::VAR_FIND_C : opcode::VAR_FIND, 0, get_const_index(expr->caller[i]));
                     //cout << "[VAR_FIND] " + expr->caller[i] << " " << get_const_index(expr->caller[i]) << endl;
                 }
                 else
@@ -344,8 +312,19 @@ private:
                     //cout << "[VAR_FIND_C] " + expr->caller[i] << " " << get_const_index(expr->caller[i]) << endl;
                 }
             }
-            run_expr(stream, expr->here);
-            write_op(stream, opcode::VAR_FIND_D, 0, 0);
+            if (expr->left)
+            {
+                run_expr(stream, expr->left);
+                if (expr->left->expr_type == ast_expr::type::instance_num || expr->left->expr_type == ast_expr::type::instance_string)
+                    write_op(stream, opcode::VAR_FIND_D, 0, 0);
+            }
+
+            if (expr->right)
+            {
+                run_expr(stream, expr->right);
+                if (expr->right->expr_type == ast_expr::type::instance_num || expr->right->expr_type == ast_expr::type::instance_string)
+                    write_op(stream, opcode::VAR_FIND_D, 0, 0);
+            }
         }
         break;
         case ast_expr::type::func_call_run:
@@ -360,7 +339,7 @@ private:
                 {
                     if (i == 0)
                     {
-                        write_op(stream, opcode::VAR_FIND, 0, get_const_index(expr->caller[i]));
+                        write_op(stream, expr->start_with_dot ? opcode::VAR_FIND_C : opcode::VAR_FIND, 0, get_const_index(expr->caller[i]));
                         //cout << "[VAR_FIND]" << expr->caller[i] << " at " << get_const_index(expr->caller[i]) << endl;
                     }
                     else
