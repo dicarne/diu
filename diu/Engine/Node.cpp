@@ -24,7 +24,12 @@ void Node::direct_call(NodeMessage message)
 {
     if (handle_message)
     {
-        auto mp = new NodeMessage(message);
+        auto mp = new NodeMessage(message.type, message.name, message.id, message.callbackNode, message.async_);
+        for (auto &a : message.args)
+        {
+            mp->args.push_back(*(a.copy()));
+        }
+
         messageBox->push(mp);
         active = true;
     }

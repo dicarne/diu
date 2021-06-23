@@ -116,9 +116,12 @@ void Engine::Run(string mod, string node, string func, shared_ptr<NodeMessage> m
             module_collection[node] = NewNode(mod, node);
         }
         auto n = node_static_f != module_collection.end() ? node_static_f->second : module_collection[node];
-        NodeMessage m(NodeMessageType::Call, message->name, message->id, message->callbackNode, message->async_);
-        m.args = message->args;
-        n->direct_call(m);
+        auto m = new NodeMessage(NodeMessageType::Call, message->name, message->id, message->callbackNode, message->async_);
+        for (auto &a : message->args)
+        {
+            m->args.push_back(*(a.clone()));
+        }
+        n->push_massage(m);
     }
 }
 

@@ -5,7 +5,12 @@ node Main {             // 声明一个节点
     static fn main() {         // 声明一个函数
         let a = {}
         a["b"]["c"] = 1
-        debug:assert(1, a["b"]["c"], 1)       
+        assert:equ(1, a["b"]["c"], 1)
+
+        a = 2
+        assert:equ(2, a, 2)
+
+        sys:exit() 
     }
     // fn add(a: num, b: num) {
     //     return a + b
