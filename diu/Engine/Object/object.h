@@ -39,10 +39,13 @@ public:
         {
             value = make_shared<json>();
         }
-
-        if (type == ObjectRawType::TypeSymbol)
+        else if (type == ObjectRawType::TypeSymbol)
         {
             value = make_shared<vector<string>>();
+        }
+        else if (type == ObjectRawType::Null)
+        {
+            value = 0.0;
         }
     }
     Object(double d)
@@ -53,7 +56,7 @@ public:
     Object(bool d)
     {
         this->type = ObjectRawType::Num;
-        value = d ? 1 : 0;
+        value = d ? 1.0 : 0.0;
     }
     Object(int d)
     {
@@ -163,129 +166,167 @@ public:
             return 0;
     }
 
+    bool try_convert_to(double &out)
+    {
+        if (type == ObjectRawType::Num || type == ObjectRawType::Bool || type == ObjectRawType::Null)
+        {
+            out = getv<double>();
+            return true;
+        }
+        return false;
+    }
+
+    bool try_convert_to(string &out)
+    {
+        if (type == ObjectRawType::Str)
+        {
+            out = getv<string>();
+            return true;
+        }
+        return false;
+    }
+
     static shared_ptr<Object> add(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
     {
-        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        double na, nb;
+        if (a->try_convert_to(na) && b->try_convert_to(nb))
         {
-            return make_shared<Object>(std::get<double>(a->value) + std::get<double>(b->value));
+            return make_shared<Object>(na + nb);
         }
-        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        string sa, sb;
+        if (a->try_convert_to(sa) && b->try_convert_to(sb))
         {
-            return make_shared<Object>(std::get<string>(a->value) + std::get<string>(b->value));
+            return make_shared<Object>(sa + sb);
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
     static shared_ptr<Object> sub(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
     {
-        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        double na, nb;
+        if (a->try_convert_to(na) && b->try_convert_to(nb))
         {
-            return make_shared<Object>(std::get<double>(a->value) - std::get<double>(b->value));
+            return make_shared<Object>(na - nb);
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
     static shared_ptr<Object> mul(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
     {
-        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        double na, nb;
+        if (a->try_convert_to(na) && b->try_convert_to(nb))
         {
-            return make_shared<Object>(std::get<double>(a->value) * std::get<double>(b->value));
+            return make_shared<Object>(na * nb);
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
     static shared_ptr<Object> div(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
     {
-        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        double na, nb;
+        if (a->try_convert_to(na) && b->try_convert_to(nb))
         {
-            return make_shared<Object>(std::get<double>(a->value) / std::get<double>(b->value));
+            return make_shared<Object>(na / nb);
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
     static shared_ptr<Object> mod(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
     {
-        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        double na, nb;
+        if (a->try_convert_to(na) && b->try_convert_to(nb))
         {
-            return make_shared<Object>(double(int(std::get<double>(a->value)) % int(std::get<double>(b->value))));
+            return make_shared<Object>(double(int(na) % int(nb)));
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
     static shared_ptr<Object> equ(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
     {
-        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        double na, nb;
+        if (a->try_convert_to(na) && b->try_convert_to(nb))
         {
-            return make_shared<Object>(double(std::get<double>(a->value) == std::get<double>(b->value) ? 1 : 0));
+            return make_shared<Object>(na == nb);
         }
-        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        string sa, sb;
+        if (a->try_convert_to(sa) && b->try_convert_to(sb))
         {
-            return make_shared<Object>(double(std::get<string>(a->value) == std::get<string>(b->value) ? 1 : 0));
+            return make_shared<Object>(sa == sb);
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
     static shared_ptr<Object> neq(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
     {
-        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        double na, nb;
+        if (a->try_convert_to(na) && b->try_convert_to(nb))
         {
-            return make_shared<Object>(double(std::get<double>(a->value) != std::get<double>(b->value) ? 1 : 0));
+            return make_shared<Object>(na != nb);
         }
-        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        string sa, sb;
+        if (a->try_convert_to(sa) && b->try_convert_to(sb))
         {
-            return make_shared<Object>(double(std::get<string>(a->value) != std::get<string>(b->value) ? 1 : 0));
+            return make_shared<Object>(sa != sb);
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
     static shared_ptr<Object> le(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
     {
-        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        double na, nb;
+        if (a->try_convert_to(na) && b->try_convert_to(nb))
         {
-            return make_shared<Object>(double(std::get<double>(a->value) <= std::get<double>(b->value) ? 1 : 0));
+            return make_shared<Object>(na <= nb);
         }
-        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        string sa, sb;
+        if (a->try_convert_to(sa) && b->try_convert_to(sb))
         {
-            return make_shared<Object>(double(std::get<string>(a->value) <= std::get<string>(b->value) ? 1 : 0));
+            return make_shared<Object>(sa <= sb);
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
     static shared_ptr<Object> lt(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
     {
-        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        double na, nb;
+        if (a->try_convert_to(na) && b->try_convert_to(nb))
         {
-            return make_shared<Object>(double(std::get<double>(a->value) < std::get<double>(b->value) ? 1 : 0));
+            return make_shared<Object>(na < nb);
         }
-        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        string sa, sb;
+        if (a->try_convert_to(sa) && b->try_convert_to(sb))
         {
-            return make_shared<Object>(double(std::get<string>(a->value) < std::get<string>(b->value) ? 1 : 0));
+            return make_shared<Object>(sa < sb);
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
     static shared_ptr<Object> ge(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
     {
-        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        double na, nb;
+        if (a->try_convert_to(na) && b->try_convert_to(nb))
         {
-            return make_shared<Object>(double(std::get<double>(a->value) >= std::get<double>(b->value) ? 1 : 0));
+            return make_shared<Object>(na >= nb);
         }
-        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        string sa, sb;
+        if (a->try_convert_to(sa) && b->try_convert_to(sb))
         {
-            return make_shared<Object>(double(std::get<string>(a->value) >= std::get<string>(b->value) ? 1 : 0));
+            return make_shared<Object>(sa >= sb);
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
     static shared_ptr<Object> gt(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
     {
-        if (a->type == ObjectRawType::Num && b->type == ObjectRawType::Num)
+        double na, nb;
+        if (a->try_convert_to(na) && b->try_convert_to(nb))
         {
-            return make_shared<Object>(double(std::get<double>(a->value) > std::get<double>(b->value) ? 1 : 0));
+            return make_shared<Object>(na > nb);
         }
-        if (a->type == ObjectRawType::Str && b->type == ObjectRawType::Str)
+        string sa, sb;
+        if (a->try_convert_to(sa) && b->try_convert_to(sb))
         {
-            return make_shared<Object>(double(std::get<string>(a->value) > std::get<string>(b->value) ? 1 : 0));
+            return make_shared<Object>(sa > sb);
         }
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
