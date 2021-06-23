@@ -701,7 +701,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
             return maybe_binary(expr, 0, it, tokens);
         }
 
-        if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::mlb_)
+        if (it != tokens.end() && (*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::mlb_)
         {
             // a[1]
             // a["h"]
@@ -740,33 +740,33 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
 
         return maybe_binary(expr, 0, it, tokens);
     }
-    else if ((*it)->get_type() == token_types::number)
+    else if (it != tokens.end() && (*it)->get_type() == token_types::number)
     {
         expr->expr_type = ast_expr::type::instance_num;
         expr->ins_value = static_cast<token_number *>(*it)->content;
         it++;
         return maybe_binary(expr, 0, it, tokens);
     }
-    else if ((*it)->get_type() == token_types::string_l)
+    else if (it != tokens.end() && (*it)->get_type() == token_types::string_l)
     {
         expr->expr_type = ast_expr::type::instance_string;
         expr->ins_value = static_cast<token_string *>(*it)->content;
         it++;
         return maybe_binary(expr, 0, it, tokens);
     }
-    else if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::slb_)
+    else if (it != tokens.end() && (*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::slb_)
     {
         auto inLb = get_tokens_in_next(op_type::slb_, op_type::srb_, it, tokens);
         auto ii = inLb.begin();
         return get_next_expr(ii, inLb);
     }
-    else if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::sub_)
+    else if (it != tokens.end() && (*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::sub_)
     {
         expr->expr_type = ast_expr::type::instance_num;
         expr->ins_value = "0";
         return maybe_binary(expr, 0, it, tokens);
     }
-    else if ((*it)->get_type() == token_types::keyword && static_cast<token_keyword *>(*it)->type == keyword_type::await_)
+    else if (it != tokens.end() && (*it)->get_type() == token_types::keyword && static_cast<token_keyword *>(*it)->type == keyword_type::await_)
     {
         expr->expr_type = ast_expr::type::await_call;
         it++;
@@ -806,7 +806,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
             return maybe_binary(expr, 0, it, tokens);
         }
     }
-    if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::llb_)
+    if (it != tokens.end() && (*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::llb_)
     {
         // TODO: 构造对象，只支持{}，相当于O:new()
         it++;
@@ -819,7 +819,7 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
             return maybe_binary(expr, 0, it, tokens);
         }
     }
-    if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::mlb_)
+    if (it != tokens.end() && (*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::mlb_)
     {
         // 数组
         it++;
