@@ -24,7 +24,8 @@ public:
         func_call_run,
         object_chain,
         await_call,
-        array_
+        array_,
+        find_child
     };
     string ins_value;
     vector<shared_ptr<ast_expr>> array;
@@ -34,8 +35,11 @@ public:
     string func_name;
     vector<shared_ptr<ast_expr>> args;
 
+    // 表达式左子树
     shared_ptr<ast_expr> left;
     shared_ptr<ast_expr> right;
+    // 值表达式
+    shared_ptr<ast_expr> here;
 
     op_type op;
 

@@ -139,6 +139,7 @@ public:
     void set_child(string name, shared_ptr<Object> value);
 
     shared_ptr<Object> get_child(string name);
+    shared_ptr<Object> get_child(double name);
 
     string to_string();
 
@@ -189,6 +190,13 @@ public:
         if (type == ObjectRawType::Str)
         {
             out = getv<string>();
+            return true;
+        }
+        if (type == ObjectRawType::Num)
+        {
+            stringstream ss;
+            ss << getv<double>();
+            out = ss.str();
             return true;
         }
         return false;

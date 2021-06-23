@@ -74,6 +74,21 @@ shared_ptr<Object> Object::get_child(string name)
     return f->second;
 }
 
+shared_ptr<Object> Object::get_child(double name)
+{
+    if (type != ObjectRawType::Array)
+    {
+        throw runtime_error("Can't get element outside array");
+    }
+    auto j = getv<shared_ptr<var_array_value>>();
+    auto i = int(name);
+    if (i >= j->size())
+    {
+        throw runtime_error("array: out of range!");
+    }
+    return (*j)[i];
+}
+
 string Object::to_string()
 {
     stringstream ss;

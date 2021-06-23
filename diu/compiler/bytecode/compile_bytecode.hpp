@@ -329,6 +329,25 @@ private:
             write_op(stream, opcode::MAKE_ARRAY, 0, expr->array.size());
         }
         break;
+        case ast_expr::type::find_child:
+        {
+            for (auto i = 0; i < expr->caller.size(); i++)
+            {
+                if (i == 0)
+                {
+                    write_op(stream, opcode::VAR_FIND, 0, get_const_index(expr->caller[i]));
+                    //cout << "[VAR_FIND] " + expr->caller[i] << " " << get_const_index(expr->caller[i]) << endl;
+                }
+                else
+                {
+                    write_op(stream, opcode::VAR_FIND_C, 0, get_const_index(expr->caller[i]));
+                    //cout << "[VAR_FIND_C] " + expr->caller[i] << " " << get_const_index(expr->caller[i]) << endl;
+                }
+            }
+            run_expr(stream, expr->here);
+            write_op(stream, opcode::VAR_FIND_D, 0, 0);
+        }
+        break;
         case ast_expr::type::func_call_run:
         case ast_expr::type::func_call:
             for (auto i = expr->args.begin(); i != expr->args.end(); i++)

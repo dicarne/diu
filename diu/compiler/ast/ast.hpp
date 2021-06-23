@@ -702,6 +702,22 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
             {
                 throw compile_error("[(] should follow a func call", (*it)->line_num);
             }
+            return maybe_binary(expr, 0, it, tokens);
+        }
+
+        if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::mlb_)
+        {
+            // a[1]
+            // a["h"]
+            // a[b]
+            expr->expr_type = ast_expr::type::find_child;
+            it++;
+            expr->here = get_next_expr(it, tokens);
+            if ((*it)->get_type() != token_types::op || static_cast<token_op *>(*it)->type != op_type::mrb_)
+            {
+                throw compile_error("[]] should behind a[b]", (*it)->line_num);
+            }
+            it++;
         }
 
         return maybe_binary(expr, 0, it, tokens);

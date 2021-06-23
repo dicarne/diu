@@ -116,6 +116,26 @@ void FuncEnv::run(int &limit)
                 }
             }
             break;
+            case opcode::VAR_FIND_D:
+            {
+                auto topv = runtime.top();
+                runtime.pop();
+                auto pre_obj = runtime.top();
+                runtime.pop();
+                if (topv->type == ObjectRawType::Str)
+                {
+                    runtime.push(pre_obj->get_child(topv->getv<string>()));
+                }
+                else if (topv->type == ObjectRawType::Num)
+                {
+                    runtime.push(pre_obj->get_child(topv->getv<double>()));
+                }
+                else
+                {
+                    throw runtime_error("Only str or num can be index of object");
+                }
+            }
+            break;
             case opcode::FUNC_CALL_LOCAL_RUN:
             case opcode::FUNC_CALL_LOCAL:
             {
