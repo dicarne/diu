@@ -7,7 +7,7 @@ RunEngine::RunEngine()
 
 void RunEngine::run_once()
 {
-    while (true)
+    while (true && alive)
     {
         if (!running->isEmpty())
         {
@@ -195,5 +195,13 @@ void Engine::Config(string config_file_path)
         main_module = main->get_child("module")->get_str_or_default("__GLOBAL__");
         main_node = main->get_child("node")->get_str_or_default("Main");
         main_func = main->get_child("func")->get_str_or_default("main");
+    }
+}
+
+void Engine::Exit()
+{
+    for (auto &r : run_engines)
+    {
+        r->alive = false;
     }
 }

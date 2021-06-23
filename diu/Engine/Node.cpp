@@ -189,6 +189,12 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_
                 caller->ret = make_shared<Object>(Pid);
                 return;
             }
+            if (msg->name == "exit")
+            {
+                caller->ret = make_shared<Object>(0);
+                engine->Exit();
+                return;
+            }
             caller->waitting = false;
             caller->ret = make_shared<Object>(0);
             return;

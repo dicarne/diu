@@ -25,6 +25,7 @@ public:
     RunEngine();
     shared_ptr<LockFreeArrayQueue<Node *>> running;
     void run_once();
+    bool alive = true;
 };
 
 class Engine
@@ -57,6 +58,7 @@ public:
     void Load(string byecode_file);
     void ActiveNode(PID pid);
     void Config(string config_file_path);
+    void Exit();
 };
 
 #endif

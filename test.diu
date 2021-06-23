@@ -5,6 +5,7 @@ node Main {             // 声明一个节点
     static fn main() {         // 声明一个函数
         let a = [1,2,3]
         sys:print(a[0])
+        sys:exit()
     }
     fn add(a: num) {
         return a + this.b
