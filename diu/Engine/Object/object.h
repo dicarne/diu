@@ -2,9 +2,10 @@
 #define OBJECT_H_
 #include "../Type.hpp"
 #include "json.h"
+#include <stack>
 #include <variant>
+using std::stack;
 using std::variant;
-
 enum ObjectRawType
 {
     Null, // !
@@ -21,7 +22,8 @@ enum ObjectRawType
 };
 class json;
 class Object;
-typedef variant<int, PID, shared_ptr<json>, double, bool, string, shared_ptr<vector<string>>> var;
+typedef vector<shared_ptr<Object>> var_array_value;
+typedef variant<int, PID, shared_ptr<json>, double, bool, string, shared_ptr<vector<string>>, shared_ptr<var_array_value>> var;
 class FuncEnv;
 class Object
 {
@@ -46,6 +48,10 @@ public:
         else if (type == ObjectRawType::Null)
         {
             value = 0.0;
+        }
+        else if (type == ObjectRawType::Array)
+        {
+            value = make_shared<vector<shared_ptr<Object>>>();
         }
     }
     Object(double d)
@@ -127,6 +133,8 @@ public:
 
         return true;
     }
+
+    static shared_ptr<Object> make_array_by_stack(stack<shared_ptr<Object>> &s);
 
     void set_child(string name, shared_ptr<Object> value);
 

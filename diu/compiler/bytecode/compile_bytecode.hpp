@@ -320,6 +320,15 @@ private:
                 }
             }
             break;
+        case ast_expr::type::array_:
+        {
+            for (auto &exp : expr->array)
+            {
+                run_expr(stream, exp);
+            }
+            write_op(stream, opcode::MAKE_ARRAY, 0, expr->array.size());
+        }
+        break;
         case ast_expr::type::func_call_run:
         case ast_expr::type::func_call:
             for (auto i = expr->args.begin(); i != expr->args.end(); i++)

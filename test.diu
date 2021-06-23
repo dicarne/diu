@@ -3,8 +3,8 @@ from you use {n1}
 
 node Main {             // 声明一个节点
     static fn main() {         // 声明一个函数
-        sys:print(1)
-        cy(10)
+        let a = [1, 2, 3+4]
+        sys:print(a)
     }
     fn add(a: num) {
         return a + this.b

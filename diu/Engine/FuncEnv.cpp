@@ -190,6 +190,17 @@ void FuncEnv::run(int &limit)
                     cur += c.data;
             }
             break;
+            case opcode::MAKE_ARRAY:
+            {
+                stack<shared_ptr<Object>> elements_stack;
+                for (auto i = 0; i < c.data; i++)
+                {
+                    elements_stack.push(runtime.top());
+                    runtime.pop();
+                }
+                runtime.push(Object::make_array_by_stack(elements_stack));
+            }
+            break;
             case opcode::CALC_OP:
             {
                 auto o = op_type(c.info);

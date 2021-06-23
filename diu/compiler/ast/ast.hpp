@@ -785,6 +785,42 @@ shared_ptr<ast_expr> AST::get_next_expr(std::deque<token_base *>::iterator &it, 
             return maybe_binary(expr, 0, it, tokens);
         }
     }
+    if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::mlb_)
+    {
+        // 数组
+        it++;
+        expr->expr_type = ast_expr::type::array_;
+        while (true)
+        {
+            if ((*it)->get_type() == token_types::op && static_cast<token_op *>(*it)->type == op_type::mrb_)
+            {
+                break;
+            }
+            expr->array.push_back(get_next_expr(it, tokens));
+            auto t = (*it)->get_type();
+            if ((*it)->get_type() == token_types::op)
+            {
+                if (static_cast<token_op *>(*it)->type == op_type::com_)
+                {
+                    it++;
+                    continue;
+                }
+                else if (static_cast<token_op *>(*it)->type == op_type::mrb_)
+                {
+                    break;
+                }
+                else
+                {
+                    throw compile_error("[,] or []] should follow array define", (*it)->line_num);
+                }
+            }
+            else
+            {
+                throw compile_error("[,] or []] should follow array define", (*it)->line_num);
+            }
+        }
+        return maybe_binary(expr, 0, it, tokens);
+    }
     throw compile_error("can not get next expr", (*it)->line_num);
     return expr;
 }

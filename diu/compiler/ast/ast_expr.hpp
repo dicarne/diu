@@ -23,9 +23,11 @@ public:
         func_call,
         func_call_run,
         object_chain,
-        await_call
+        await_call,
+        array_
     };
     string ins_value;
+    vector<shared_ptr<ast_expr>> array;
 
     // use in func_call and object_chain
     vector<string> caller;

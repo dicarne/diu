@@ -1,6 +1,7 @@
 #include "json.h"
 #include "../../compiler/lexer.h"
 #include <sstream>
+#include <stack>
 
 shared_ptr<Object> json::from(string str)
 {
@@ -48,7 +49,37 @@ shared_ptr<Object> json::parse(std::deque<token_base *> &tokens, std::deque<toke
         }
         else if (it_op->type == op_type::mlb_)
         {
-            throw runtime_error("json: not surrport array yet");
+            it++;
+            stack<shared_ptr<Object>> array_;
+            while (true)
+            {
+                auto r = parse(tokens, it);
+                if (r == nullptr)
+                {
+                    auto it_type_ = (*it)->get_type();
+                    auto it_op_ = static_cast<token_op *>(*it);
+                    if (it_op_->type != op_type::mrb_)
+                    {
+                        throw runtime_error("] should behind array define");
+                    }
+                    break;
+                }
+                array_.push(r);
+                if ((*it)->get_type() == token_types::op)
+                {
+                    if (static_cast<token_op *>(*it)->type == op_type::com_)
+                    {
+                        it++;
+                        continue;
+                    }
+                    if (static_cast<token_op *>(*it)->type == op_type::mrb_)
+                    {
+                        break;
+                    }
+                    throw runtime_error("] should behind array define");
+                }
+            }
+            return Object::make_array_by_stack(array_);
         }
     }
     else if (it_type == token_types::string_l)
@@ -65,6 +96,15 @@ shared_ptr<Object> json::parse(std::deque<token_base *> &tokens, std::deque<toke
         ss >> d;
         it++;
         return make_shared<Object>(d);
+    }
+    else if (it_type == token_types::name)
+    {
+        auto it_name = static_cast<token_name *>(*it)->name;
+        if (it_name == "null")
+        {
+            it++;
+            return make_shared<Object>(ObjectRawType::Null);
+        }
     }
     return nullptr;
 }

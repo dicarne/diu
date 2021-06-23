@@ -31,6 +31,11 @@ shared_ptr<Object> Object::copy()
         }
     }
     break;
+    case ObjectRawType::Array:
+    {
+        p->value = std::get<shared_ptr<var_array_value>>(value);
+    }
+    break;
     default:
         break;
     }
@@ -39,6 +44,11 @@ shared_ptr<Object> Object::copy()
 
 void Object::set_child(string name, shared_ptr<Object> value)
 {
+    if (type == ObjectRawType::Null)
+    {
+        type == ObjectRawType::Struct;
+        this->value = make_shared<json>();
+    }
     if (type != ObjectRawType::Struct)
     {
         throw runtime_error("Can't get child in a simple value");
@@ -57,7 +67,7 @@ shared_ptr<Object> Object::get_child(string name)
     auto f = j->data.find(name);
     if (f == j->data.end())
     {
-        auto n = make_shared<Object>(ObjectRawType::Null);
+        auto n = make_shared<Object>(ObjectRawType::Struct);
         j->data[name] = n;
         return n;
     }
@@ -112,6 +122,31 @@ string Object::to_string()
             ss << s << ".";
         }
         ss << "\"";
+    }
+    break;
+    case ObjectRawType::Array:
+    {
+        ss << "[";
+        auto arr = getv<shared_ptr<var_array_value>>();
+        for (auto i = 0; i < arr->size(); i++)
+        {
+            if (i != arr->size() - 1)
+            {
+                ss << (*arr)[i]->to_string();
+                ss << ",";
+            }
+            else
+            {
+                ss << (*arr)[i]->to_string();
+            }
+        }
+
+        ss << "]";
+    }
+    break;
+    case ObjectRawType::Null:
+    {
+        ss << "null";
     }
     break;
     default:
@@ -169,8 +204,30 @@ shared_ptr<Object> Object::clone()
         }
     }
     break;
+    case ObjectRawType::Array:
+    {
+        auto arr = getv<shared_ptr<var_array_value>>();
+        auto pv = p->getv<shared_ptr<var_array_value>>();
+        for (auto i = 0; i < arr->size(); i++)
+        {
+            pv->push_back((*arr)[i]->clone());
+        }
+    }
+    break;
     default:
         break;
+    }
+    return p;
+}
+
+shared_ptr<Object> Object::make_array_by_stack(stack<shared_ptr<Object>> &s)
+{
+    auto p = make_shared<Object>(ObjectRawType::Array);
+    auto v = p->getv<shared_ptr<var_array_value>>();
+    while (!s.empty())
+    {
+        v->push_back(s.top());
+        s.pop();
     }
     return p;
 }
