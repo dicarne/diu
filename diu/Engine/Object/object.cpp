@@ -36,6 +36,11 @@ shared_ptr<Object> Object::copy()
         p->value = std::get<shared_ptr<var_array_value>>(value);
     }
     break;
+    case ObjectRawType::Await:
+    {
+        p->value = std::get<int>(value);
+    }
+    break;
     default:
         break;
     }
@@ -232,6 +237,11 @@ shared_ptr<Object> Object::clone()
         {
             pv->push_back((*arr)[i]->clone());
         }
+    }
+    break;
+    case ObjectRawType::Await:
+    {
+        p->value = std::get<int>(value);
     }
     break;
     default:

@@ -297,7 +297,9 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<NodeMessage> msg)
     if (!msg->async_)
         waitting_callback[msg->id] = caller;
     else
+    {
         f->async_call = msg->async_;
+    }
     run_func(f);
 }
 

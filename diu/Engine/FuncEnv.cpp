@@ -381,7 +381,7 @@ void FuncEnv::run(int &limit)
     {
         failed = true;
         completed = true;
-        std::cout << e.what() << endl;
+        std::cout << "[ERROR] " << env->module_name << "." << code->node->name << ":" << code->name << " - " << e.what() << endl;
         return;
     }
 }

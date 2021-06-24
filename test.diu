@@ -16,12 +16,15 @@ node Main {             // 声明一个节点
         assert:equ(2, a, 2)
     
         assert:equ(3, this.newv, 100)
+
+        let c = run add(2, 3)
+        sys:print(await c)
     
         sys:exit() 
     }
-    // fn add(a: num, b: num) {
-    //     return a + b
-    // }
+    fn add(a: num, b: num) {
+        return a + b
+    }
     // fn cy(a: num) {
     //     a = a-1
     //     sys:print(a)
