@@ -81,11 +81,11 @@ shared_ptr<Node> Engine::NewNode(string mod, string node_name)
 void Engine::Run(string mod, string node, string func)
 {
     auto nodei = NewNode(mod, node);
-    NodeMessage m(NodeMessageType::Call, func, 0, PID(0, 0), false);
-    m.name = func;
-    m.id = 0;
-    m.callbackNode = PID(0, 0);
-    nodei->direct_call(m);
+    auto newm = make_shared<NodeMessage>(NodeMessageType::Call, "new", 0, PID(0, 0), false);
+    Run(nodei->Pid, newm);
+    auto m = make_shared<NodeMessage>(NodeMessageType::Call, func, 0, PID(0, 0), false);
+    Run(nodei->Pid, m);
+    //nodei->direct_call(m);
 }
 void Engine::Run(string mod, string node, string func, shared_ptr<NodeMessage> message)
 {

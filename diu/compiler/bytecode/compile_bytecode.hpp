@@ -127,7 +127,7 @@ private:
 
                 run_expr(stream, ass->expr);
                 // if (ass->object_find == "")
-                if (ass->object_find->left != nullptr)
+                if (ass->object_find->left != nullptr || ass->object_find->caller.size() > 1)
                 {
                     run_expr(stream, ass->object_find);
                     //write_op(stream, opcode::VAR_FIND_C, 0, get_const_index(ass->object_chain[ass->object_chain.size() - 1]));
