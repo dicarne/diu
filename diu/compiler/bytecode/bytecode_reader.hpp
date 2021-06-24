@@ -193,7 +193,7 @@ public:
                         cout << "VAR\t\t\t" << 0 << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
                     case opcode::LOAD:
-                        cout << "LOAD\t\t\t" << 0 << "\t " << (*mod->const_string)[cmd] << endl;
+                        cout << "LOAD\t\t\t" << 0 << "\t " << cmd << endl;
                         break;
                     case opcode::VAR_FIND:
                         cout << "VAR_FIND\t\t" << 0 << "\t " << (*mod->const_string)[cmd] << endl;
@@ -229,6 +229,9 @@ public:
                         break;
                     case opcode::WAIT_FUNC_CALL:
                         cout << "WAIT_FUNC_CALL\t\t" << 0 << "\t " << cmd << endl;
+                        break;
+                    case opcode::VAR_FIND_D:
+                        cout << "VAR_FIND_D\t\t" << 0 << "\t " << cmd << endl;
                         break;
                     default:
                         cout << "??\t\t\t"

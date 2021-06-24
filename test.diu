@@ -1,4 +1,4 @@
-module "my"
+module my
 from debug use {assert}
 
 node Main {             // 声明一个节点
