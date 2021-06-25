@@ -1,0 +1,6 @@
+#ifndef CONF_H_
+#define CONF_H_
+
+#define ENGINE_VERSION @DIU_VERSION@
+
+#endif

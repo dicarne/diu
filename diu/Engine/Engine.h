@@ -46,7 +46,7 @@ private:
     string main_func;
     string main_node;
 public:
-    Engine(int version);
+    Engine();
     ~Engine();
     shared_ptr<CodeEngine> codes;
     void Run(string mod, string node, string func);
@@ -59,6 +59,7 @@ public:
     void ActiveNode(PID pid);
     void Config(string config_file_path);
     void Exit();
+    double get_version();
 };
 
 #endif

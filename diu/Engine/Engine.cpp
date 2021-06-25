@@ -30,9 +30,9 @@ public:
     }
 };
 
-Engine::Engine(int version)
+Engine::Engine()
 {
-    this->version = version;
+    //this->version = version;
     this->codes = make_shared<CodeEngine>();
     auto thread_count = 4;
     this->thread_pool = make_shared<ThreadPool>(thread_count);
@@ -46,6 +46,8 @@ Engine::Engine(int version)
         thread_pool->submit(std::mem_fn(&NodeExec::run), exec);
     }
 }
+
+double Engine::get_version() { return ENGINE_VERSION; }
 
 Engine::~Engine()
 {

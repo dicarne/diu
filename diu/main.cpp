@@ -10,8 +10,8 @@ int main(int, char **)
     files.push_back("test.diu");
     files.push_back("test2.diu");
     compiler::compile("test.diuc", files);
-
-    Engine e = Engine(ENGINE_VERSION);
+ 
+    Engine e = Engine();
     e.Config("config.json");
     e.Load("test.diuc");
     e.RunCode();
