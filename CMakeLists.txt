@@ -26,7 +26,7 @@ add_executable(diuexec diu/main.cpp ${headers})
 #target_link_libraries(diuexec ${CMAKE_DL_LIBS} )
 #target_link_libraries(diuexec PRIVATE libevent::core libevent::extra libevent::pthreads)
 
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/build/lib/${DIU_VERSION}") 
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/build/lib/${DIU_VERSION_MASTER}.${DIU_VERSION_SLAVER}") 
 add_executable(libdiuexec diu/main.cpp ${headers}) 
 #target_link_libraries(libdiuexec PRIVATE libevent::core libevent::extra libevent::pthreads)
 
