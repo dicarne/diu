@@ -60,7 +60,7 @@ public:
     bytecode_writer(string path)
     {
         this->path = path;
-        engine_version = ENGINE_VERSION;
+        engine_version = engine_version_get();
         file = std::ofstream(path, std::ios::binary);
         make_file_metadata();
     }
@@ -88,15 +88,14 @@ public:
     void set_meta_data(double engine_version, string module_name)
     {
         if (engine_version == 0)
-            engine_version = ENGINE_VERSION;
+            engine_version = engine_version_get();
         if (this->engine_version != engine_version)
         {
             // TODO: 若使用不支持的引擎版本，则使用对应引擎进行编译
             throw compile_error("Engine Version Not Surrort Yet! ", 0);
         }
         module_name_index = write_const_string(module_name);
-        
-    }
+        }
 
     void complete_make()
     {

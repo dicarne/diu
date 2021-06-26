@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 3.0.0)
 project(diu VERSION 0.1.0)
 
 # 在此修改版本号，会影响编译器内部版本号
-set(DIU_VERSION 0.1)
+set(DIU_VERSION_MASTER 0)
+set(DIU_VERSION_SLAVER 2)
 
 include_directories("${PROJECT_BINARY_DIR}")
-configure_file("${PROJECT_SOURCE_DIR}/diu/conf.h.in" "${PROJECT_SOURCE_DIR}/diu/conf.h" @ONLY)
+configure_file("${PROJECT_SOURCE_DIR}/diu/confc.h.in" "${PROJECT_SOURCE_DIR}/diu/confc.h" @ONLY)
 
 
 set(CMAKE_CXX_STANDARD 17)
