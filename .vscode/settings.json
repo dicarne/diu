@@ -58,5 +58,8 @@
         "condition_variable": "cpp",
         "future": "cpp",
         "mutex": "cpp"
+    },
+    "cmake.configureSettings": {
+        "CMAKE_TOOLCHAIN_FILE": "~/github/vcpkg/scripts/buildsystems/vcpkg.cmake"
     }
 }

@@ -6,9 +6,9 @@
 #include <variant>
 using std::stack;
 using std::variant;
-enum ObjectRawType
+enum ObjectRawType: unsigned char
 {
-    Null, // !
+    Null = 0, // !
     Pid,  // !
     Int,  // !
     Num,  // !

@@ -25,6 +25,9 @@ struct PID
     PID(int engine, int64 pid) : engine(engine), pid(pid)
     {
     }
+    PID(int engine, int64 pid, int server) : engine(engine), pid(pid), server(server)
+    {
+    }
 };
 
 class Type
