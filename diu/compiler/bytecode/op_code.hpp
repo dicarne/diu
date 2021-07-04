@@ -23,7 +23,7 @@ enum class opcode : opcode_type
     FUNC_CALL_BY_NAME_RUN = 17,
     RETURN = 18,         // RETUEN 0 0
     CALC_OP = 19,        // 计算符号 CALC_OP OPCODE
-    JUMP = 20,           // JUMP 0 OFFSET
+    JUMP = 20,           // JUMP 0 OFFSET 普通跳跃  JUMP 1 OFFSET break跳跃（注意1只是标识为break，并不参与运行时）JUMP 2 OFFSET continue跳跃
     JUMP_NIF = 21,       // JUMP_NIF 0 OFFSET
     WAIT_FUNC_CALL = 22, // 等待函数返回
     AWAIT = 23,

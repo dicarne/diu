@@ -484,6 +484,22 @@ void AST::build_statements(vector<ast_statement> &statements, deque<token_base *
                 statements.push_back(stat);
                 continue;
             }
+            else if (token->type == keyword_type::break_)
+            {
+                fi++;
+                ast_statement sta;
+                sta.statemen_type = ast_statement::type::break_;
+                statements.push_back(sta);
+                continue;
+            }
+            else if (token->type == keyword_type::continue_)
+            {
+                fi++;
+                ast_statement sta;
+                sta.statemen_type = ast_statement::type::continue_;
+                statements.push_back(sta);
+                continue;
+            }
             else
             {
                 // Another keywords

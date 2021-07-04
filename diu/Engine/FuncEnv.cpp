@@ -198,6 +198,10 @@ void FuncEnv::run(int &limit)
             break;
             case opcode::JUMP:
             {
+                if (c.info != 0)
+                {
+                    throw runtime_error("JUMP Info should be 0.");
+                }
                 cur += short(c.data);
             }
             break;
@@ -389,7 +393,8 @@ void FuncEnv::run(int &limit)
                     }
                     else
                     {
-                        runtime = nullptr;
+                        runtime = make_shared<stack<Object::Ptr>>();
+                        stacks.push(runtime);
                     }
                 }
             }

@@ -103,7 +103,7 @@ public:
                     writer->write_node<int>(get_const_index(arg.type_name));
                 }
 
-                auto stream = run_statements(fn.second.statements).str();
+                auto stream = run_statements(fn.second.statements)->compile();
                 writer->write_node<int>(stream.size());
                 writer->write_node_stream(stream);
             }
@@ -111,9 +111,59 @@ public:
     }
 
 private:
-    stringstream run_statements(std::vector<ast_statement> &statements)
+    class context
     {
+        struct codeline
+        {
+            opcode code;
+            char info;
+            int16_t data;
+        };
+
+    public:
+        typedef shared_ptr<context> Ptr;
         stringstream stream;
+        std::deque<codeline> codes;
+        string compile()
+        {
+            for (auto &it : codes)
+            {
+                stream.write(reinterpret_cast<char *>(&it.code), sizeof(it.code));
+                stream.write(reinterpret_cast<char *>(&it.info), sizeof(it.info));
+                stream.write(reinterpret_cast<char *>(&it.data), sizeof(it.data));
+            }
+            return stream.str();
+        }
+        void write_op(opcode code, char info, int16_t data)
+        {
+            codeline codel;
+            codel.code = code;
+            codel.info = info;
+            codel.data = data;
+            codes.push_back(std::move(codel));
+        }
+        void append(context::Ptr another)
+        {
+            if (another == nullptr)
+                return;
+            for (auto &it : another->codes)
+            {
+                codes.push_back(it);
+            }
+        }
+        static context::Ptr New()
+        {
+            return make_shared<context>();
+        }
+        size_t size()
+        {
+            return codes.size() * 4;
+        }
+    };
+
+    context::Ptr run_statements(std::vector<ast_statement> &statements)
+    {
+        context::Ptr stream = context::New();
         write_op(stream, opcode::STACK_OP, 0, 0);
         for (auto ss = statements.begin(); ss != statements.end(); ss++)
         {
@@ -142,17 +192,17 @@ private:
                     //cout << "[LET] " << ass->name << " at " << get_const_index(ass->name) << " = [TOP]" << endl;
                 }
             }
-            if (ss->statemen_type == ast_statement::type::expr)
+            else if (ss->statemen_type == ast_statement::type::expr)
             {
                 run_expr(stream, ss->expr);
             }
-            if (ss->statemen_type == ast_statement::type::ret)
+            else if (ss->statemen_type == ast_statement::type::ret)
             {
                 run_expr(stream, ss->expr);
                 write_op(stream, opcode::RETURN, 0, 0);
                 //cout << "[RET] [TOP]" << endl;
             }
-            if (ss->statemen_type == ast_statement::type::if_)
+            else if (ss->statemen_type == ast_statement::type::if_)
             {
                 run_expr(stream, ss->if_->cond);
                 auto body_size = 0;
@@ -161,8 +211,8 @@ private:
                 //cout << "[IF] [TOP]" << endl;
 
                 // if true body
-                auto if_true_states = run_statements(*(ss->if_->if_true)).str();
-                body_size += if_true_states.size();
+                auto if_true_states = run_statements(*(ss->if_->if_true));
+                body_size += if_true_states->size();
 
                 // JUMP TO END ->
                 body_size += op_size;
@@ -170,74 +220,99 @@ private:
                 // -----------
 
                 auto _next_elif = body_size;
-                vector<string> elif_conds;
-                vector<string> elif_bodys;
+                vector<context::Ptr> elif_conds;
+                vector<context::Ptr> elif_bodys;
                 for (auto i = ss->if_->else_if->begin(); i != ss->if_->else_if->end(); i++)
                 {
-                    stringstream ss;
+                    auto ss = context::New();
                     run_expr(ss, i->cond);
-                    auto cond_s = ss.str();
+                    auto cond_s = ss;
                     elif_conds.push_back(cond_s);
-                    body_size += cond_s.size();
+                    body_size += cond_s->size();
                     // IF N TRUE ->
                     body_size += op_size;
                     //cout << "[ELIF] [TOP]" << endl;
-                    auto sb = run_statements(*(i->if_true)).str();
-                    body_size += sb.size();
+                    auto sb = run_statements(*(i->if_true));
+                    body_size += sb->size();
                     //cout << "[ELIF] [END]" << endl;
                     elif_bodys.push_back(sb);
                     body_size += op_size;
                     // JUMP TO END ->
                 }
-                string else_body;
+                context::Ptr else_body;
                 if (ss->if_->if_false->size() > 0)
                 {
                     //cout << "[ELSE]" << endl;
-                    auto s = run_statements(*(ss->if_->if_false));
-                    else_body = s.str();
-                    body_size += else_body.size();
+                    else_body = run_statements(*(ss->if_->if_false));
+                    body_size += else_body->size();
                     //cout << "[ELSE] [END]" << endl;
                 }
                 // -------------------------
                 write_op(stream, opcode::JUMP_NIF, 0, _next_elif / 4 - 1); // ok
-                stream.write(if_true_states.c_str(), if_true_states.size());
+                stream->append(if_true_states);
                 write_op(stream, opcode::JUMP, 0, (body_size - _next_elif) / 4); // ok
 
                 body_size -= _next_elif;
                 for (auto i = 0; i < ss->if_->else_if->size(); i++)
                 {
-                    stream.write(elif_conds[i].c_str(), elif_conds[i].size());
-                    body_size -= elif_conds[i].size();
+                    stream->append(elif_conds[i]);
+                    body_size -= elif_conds[i]->size();
                     body_size -= op_size;
-                    body_size -= elif_bodys[i].size();
+                    body_size -= elif_bodys[i]->size();
                     body_size -= op_size;
-                    write_op(stream, opcode::JUMP_NIF, 0, (elif_bodys[i].size() / 4) + 1);
-                    stream.write(elif_bodys[i].c_str(), elif_bodys[i].size());
+                    write_op(stream, opcode::JUMP_NIF, 0, (elif_bodys[i]->size() / 4) + 1);
+                    stream->append(elif_bodys[i]);
                     write_op(stream, opcode::JUMP, 0, body_size / 4); // ok
                 }
-                stream.write(else_body.c_str(), else_body.size());
+                stream->append(else_body);
             }
-            if (ss->statemen_type == ast_statement::type::while_)
+            else if (ss->statemen_type == ast_statement::type::while_)
             {
-                stringstream sw;
+                context::Ptr sw = context::New();
                 run_expr(sw, ss->while_->cond);
-                auto se = sw.str();
-                stream.write(se.c_str(), se.size());
-                auto body_size = se.size();
+
+                stream->append(sw);
+                auto body_size = sw->size();
                 body_size += op_size;
 
                 //cout << "[WHILE] [TOP]" << endl;
-                auto body = run_statements(*(ss->while_->statements)).str();
-                body_size += body.size();
+                auto body = run_statements(*(ss->while_->statements));
+                for (auto i = 0; i < body->codes.size(); i++)
+                {
+                    auto &it = body->codes[i];
+                    if (it.code == opcode::JUMP && it.info == 2)
+                    {
+                        // continue
+                        it.info = 0;
+                        it.data = -i - 1;
+                    }
+                    else if (it.code == opcode::JUMP && it.info == 1)
+                    {
+                        // break;
+                        it.info = 0;
+                        it.data = body->codes.size() - i;
+                    }
+                }
+                body_size += body->size();
                 body_size += op_size;
                 //cout << "[WHILE] [END]" << endl;
                 // -----------------------
                 // while (jump nif)
                 // ...
                 // jump back
-                write_op(stream, opcode::JUMP_NIF, 0, (body_size - se.size() - 1) / 4);
-                stream.write(body.c_str(), body.size());
+                write_op(stream, opcode::JUMP_NIF, 0, (body_size - sw->size() - 1) / 4);
+                stream->append(body);
                 write_op(stream, opcode::JUMP, 0, -int(body_size) / 4);
+            }
+            else if (ss->statemen_type == ast_statement::type::break_)
+            {
+                write_op(stream, opcode::STACK_OP, 1, 0);
+                write_op(stream, opcode::JUMP, 1, 0);
+            }
+            else if (ss->statemen_type == ast_statement::type::continue_)
+            {
+                write_op(stream, opcode::STACK_OP, 1, 0);
+                write_op(stream, opcode::JUMP, 2, 0);
             }
 
             //cout << "------------" << endl;
@@ -246,7 +321,7 @@ private:
         return stream;
     }
 
-    void run_expr(stringstream &stream, shared_ptr<ast_expr> expr)
+    void run_expr(context::Ptr &stream, shared_ptr<ast_expr> expr)
     {
         switch (expr->expr_type)
         {
@@ -378,56 +453,15 @@ private:
             run_expr(stream, expr->left);
             run_expr(stream, expr->right);
             write_op(stream, opcode::CALC_OP, char(expr->op), 0);
-            //cout << "[OP] ";
-            /*
-            switch (expr->op)
-            {
-            case op_type::add_:
-
-                cout << "[+] ";
-                break;
-            case op_type::sub_:
-                cout << "[-] ";
-                break;
-            case op_type::mul_:
-                cout << "[*] ";
-                break;
-            case op_type::div_:
-                cout << "[/] ";
-                break;
-            case op_type::mod_:
-                cout << "[%] ";
-                break;
-            case op_type::gt_:
-                cout << "[>] ";
-                break;
-            case op_type::lt_:
-                cout << "[<] ";
-                break;
-            case op_type::ge_:
-                cout << "[>=] ";
-                break;
-            case op_type::le_:
-                cout << "[<=] ";
-                break;
-            default:
-                cout << "[OP] ";
-                break;
-            }
-            cout << "2";
-            cout << endl;
-            */
             break;
         default:
             break;
         }
     }
 
-    void write_op(stringstream &s, opcode code, char info, int16_t data)
+    void write_op(context::Ptr &s, opcode code, char info, int16_t data)
     {
-        s.write(reinterpret_cast<char *>(&code), sizeof(code));
-        s.write(reinterpret_cast<char *>(&info), sizeof(info));
-        s.write(reinterpret_cast<char *>(&data), sizeof(data));
+        s->write_op(code, info, data);
     }
 };
 #endif

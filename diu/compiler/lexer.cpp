@@ -184,7 +184,7 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
             if (compiler_type::issignal(*it))
             {
                 tmp += *it;
-                if (*it == ')' || *it == '}' || *it == ']')
+                if (*it == ')' || *it == '}' || *it == ']' || cvt->wide2local(tmp) == "//" )
                 {
                     it++;
                     goto CompleteOPtoken;
