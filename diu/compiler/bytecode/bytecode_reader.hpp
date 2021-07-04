@@ -203,16 +203,16 @@ public:
                         cout << "VAR_FIND_C\t\t" << 0 << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
                     case opcode::FUNC_CALL_LOCAL:
-                        cout << "FUNC_CALL_LOCAL\t\t" << info << "\t " << (*mod->const_string)[cmd] << endl;
+                        cout << "FUNC_CALL_LOCAL\t\t" << int(info) << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
                     case opcode::FUNC_CALL_BY_NAME:
-                        cout << "FUNC_CALL_BY_NAME\t" << info << "\t " << (*mod->const_string)[cmd] << endl;
+                        cout << "FUNC_CALL_BY_NAME\t" << int(info) << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
                     case opcode::FUNC_CALL_LOCAL_RUN:
-                        cout << "FUNC_CALL_LOCAL_RUN\t\t" << info << "\t " << (*mod->const_string)[cmd] << endl;
+                        cout << "FUNC_CALL_LOCAL_RUN\t\t" << int(info) << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
                     case opcode::FUNC_CALL_BY_NAME_RUN:
-                        cout << "FUNC_CALL_BY_NAME_RUN\t" << info << "\t " << (*mod->const_string)[cmd] << endl;
+                        cout << "FUNC_CALL_BY_NAME_RUN\t" << int(info) << "\t " << (*mod->const_string)[cmd] << endl;
                         break;
                     case opcode::RETURN:
                         cout << "RETURN\t\t" << endl;
@@ -235,7 +235,7 @@ public:
                         cout << "VAR_FIND_D\t\t" << 0 << "\t " << cmd << endl;
                         break;
                     case opcode::STACK_OP:
-                        cout << "STACK_OP\t\t" << info << "\t " << cmd << endl;
+                        cout << "STACK_OP\t\t" << int(info) << "\t " << cmd << endl;
                         break;
                     default:
                         cout << "??\t\t\t"
