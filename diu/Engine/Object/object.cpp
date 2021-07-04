@@ -1,5 +1,5 @@
 #include "object.h"
-shared_ptr<Object> Object::copy()
+Object::Ptr Object::copy()
 {
     auto p = make_shared<Object>(type);
     switch (type)
@@ -47,7 +47,7 @@ shared_ptr<Object> Object::copy()
     return p;
 }
 
-void Object::set_child(string name, shared_ptr<Object> value)
+void Object::set_child(string name, Object::Ptr value)
 {
     if (type == ObjectRawType::Null)
     {
@@ -62,7 +62,7 @@ void Object::set_child(string name, shared_ptr<Object> value)
     j->data[name] = value->type == ObjectRawType::Struct ? value : value->copy();
 }
 
-shared_ptr<Object> Object::get_child(string name)
+Object::Ptr Object::get_child(string name)
 {
     if (type == ObjectRawType::Null)
     {
@@ -84,7 +84,7 @@ shared_ptr<Object> Object::get_child(string name)
     return f->second;
 }
 
-shared_ptr<Object> Object::get_child(double name)
+Object::Ptr Object::get_child(double name)
 {
     if (type != ObjectRawType::Array)
     {
@@ -197,7 +197,7 @@ string Object::encode_string(string str)
     return ss.str();
 }
 
-shared_ptr<Object> Object::clone()
+Object::Ptr Object::clone()
 {
     auto p = make_shared<Object>(type);
     switch (type)
@@ -250,7 +250,7 @@ shared_ptr<Object> Object::clone()
     return p;
 }
 
-shared_ptr<Object> Object::make_array_by_stack(stack<shared_ptr<Object>> &s)
+Object::Ptr Object::make_array_by_stack(stack<Object::Ptr> &s)
 {
     auto p = make_shared<Object>(ObjectRawType::Array);
     auto v = p->getv<shared_ptr<var_array_value>>();

@@ -47,7 +47,12 @@ Engine::Engine()
     }
 }
 
-double Engine::get_version() { return engine_version_get(); }
+double Engine::get_version()
+{
+    if (engine_version == 0)
+        engine_version = engine_version_get();
+    return engine_version;
+}
 
 Engine::~Engine()
 {

@@ -26,10 +26,10 @@ class Object;
 class FuncEnv
 {
 private:
-    stack<shared_ptr<Object>> runtime;
-
+    shared_ptr<stack<Object::Ptr>> runtime;
+    stack<shared_ptr<stack<Object::Ptr>>> stacks;
     void call_another_func(string name, vector<Object> args, bool async_);
-    void call_another_func(shared_ptr<Object> symbol, string name, vector<Object> args, bool async_);
+    void call_another_func(Object::Ptr symbol, string name, vector<Object> args, bool async_);
     int async_index = 0;
 public:
     bool completed;
@@ -37,9 +37,9 @@ public:
     bool waitting;
     int async_call = 0;
     shared_ptr<CodeFunc> code;
-    unordered_map<string, shared_ptr<Object>> local_var;
-    unordered_map<int, shared_ptr<Object>> waitting_async;
-    shared_ptr<Object> ret;
+    unordered_map<string, Object::Ptr> local_var;
+    unordered_map<int, Object::Ptr> waitting_async;
+    Object::Ptr ret;
     Node *node;
     int id = 0;
     int cur = 0;

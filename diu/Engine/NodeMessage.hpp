@@ -33,7 +33,7 @@ struct NodeMessage
 
 private:
     void _serialize(Object *o, stringstream &ss);
-    static shared_ptr<Object> _deserialize(stringstream &ss);
+    static Object::Ptr _deserialize(stringstream &ss);
     template <typename T>
     static T read(stringstream &stream)
     {

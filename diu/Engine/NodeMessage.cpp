@@ -26,6 +26,7 @@ stringstream NodeMessage::serialize()
     ss.write(TO_BYTES(z_payload));
     auto p = payload.str();
     ss.write(p.c_str(), p.size());
+    return ss;
 }
 
 void NodeMessage::_serialize(Object *o, stringstream &ss)
@@ -96,7 +97,7 @@ void NodeMessage::_serialize(Object *o, stringstream &ss)
     case ObjectRawType::Array:
     {
         ss.write(TO_BYTES(o->type));
-        auto v = o->getv<shared_ptr<vector<shared_ptr<Object>>>>();
+        auto v = o->getv<shared_ptr<vector<Object::Ptr>>>();
         auto vz = v->size();
         ss.write(TO_BYTES(vz));
         for (auto &it : *v)
@@ -135,7 +136,7 @@ NodeMessage *NodeMessage::deserialize(stringstream &ss)
     return m;
 }
 
-shared_ptr<Object> NodeMessage::_deserialize(stringstream &ss)
+Object::Ptr NodeMessage::_deserialize(stringstream &ss)
 {
     auto type = read<ObjectRawType>(ss);
     auto o = make_shared<Object>(type);
@@ -191,7 +192,7 @@ shared_ptr<Object> NodeMessage::_deserialize(stringstream &ss)
     break;
     case ObjectRawType::Array:
     {
-        auto v = o->getv<shared_ptr<vector<shared_ptr<Object>>>>();
+        auto v = o->getv<shared_ptr<vector<Object::Ptr>>>();
         auto sv = read<std::size_t>(ss);
         for (auto i = 0; i < sv; i++)
         {
@@ -201,7 +202,8 @@ shared_ptr<Object> NodeMessage::_deserialize(stringstream &ss)
     break;
     default:
     {
-        }
+    }
     break;
     }
+    return nullptr;
 }

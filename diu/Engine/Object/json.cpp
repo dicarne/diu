@@ -3,7 +3,7 @@
 #include <sstream>
 #include <stack>
 
-shared_ptr<Object> json::from(string str)
+Object::Ptr json::from(string str)
 {
     lexer l;
     auto tokens = l.process_string(str, charset::utf8);
@@ -11,7 +11,7 @@ shared_ptr<Object> json::from(string str)
     return parse(tokens, it);
 }
 
-shared_ptr<Object> json::parse(std::deque<token_base *> &tokens, std::deque<token_base *>::iterator &it)
+Object::Ptr json::parse(std::deque<token_base *> &tokens, std::deque<token_base *>::iterator &it)
 {
     auto it_type = (*it)->get_type();
     if (it_type == token_types::op)
@@ -50,7 +50,7 @@ shared_ptr<Object> json::parse(std::deque<token_base *> &tokens, std::deque<toke
         else if (it_op->type == op_type::mlb_)
         {
             it++;
-            stack<shared_ptr<Object>> array_;
+            stack<Object::Ptr> array_;
             while (true)
             {
                 auto r = parse(tokens, it);

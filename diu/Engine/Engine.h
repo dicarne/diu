@@ -45,6 +45,8 @@ private:
     string main_module;
     string main_func;
     string main_node;
+
+    double engine_version = 0;
 public:
     Engine();
     ~Engine();

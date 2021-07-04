@@ -29,6 +29,7 @@ enum class opcode : opcode_type
     AWAIT = 23,
     AWAIT_C = 24,
     MAKE_ARRAY = 25, // 通过栈顶的N个元素构造数组 MAKE_ARRAY 0 ELEMENT_COUNT
+    STACK_OP = 27, // 栈操作 STACK_OP 0 0 创建新栈 STACK_OP 1 0 销毁当前栈
 };
 
 struct opcomd

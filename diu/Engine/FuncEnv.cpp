@@ -9,7 +9,7 @@ void FuncEnv::call_another_func(string name, vector<Object> args, bool async_)
     m->args = args;
     node->call_another_func(this, m);
 }
-void FuncEnv::call_another_func(shared_ptr<Object> symbol, string name, vector<Object> args, bool async_)
+void FuncEnv::call_another_func(Object::Ptr symbol, string name, vector<Object> args, bool async_)
 {
     if (!async_)
         waitting = true;
@@ -39,16 +39,16 @@ void FuncEnv::run(int &limit)
             case opcode::LET:
             {
                 auto name = (*env->const_string)[c.data];
-                local_var[name] = runtime.top()->copy();
-                runtime.pop();
+                local_var[name] = runtime->top()->copy();
+                runtime->pop();
             }
             break;
             case opcode::LET_C:
             {
-                auto target = runtime.top();
-                runtime.pop();
-                auto value = runtime.top();
-                runtime.pop();
+                auto target = runtime->top();
+                runtime->pop();
+                auto value = runtime->top();
+                runtime->pop();
                 target->set(value->type, value->value);
             }
             break;
@@ -67,14 +67,14 @@ void FuncEnv::run(int &limit)
                 {
                     auto v = (*env->const_double)[c.data];
                     auto p = make_shared<Object>(v);
-                    runtime.push(p);
+                    runtime->push(p);
                 }
                 break;
                 case const_value_type::STRING:
                 {
                     auto v = (*env->const_string)[c.data];
                     auto p = make_shared<Object>(v);
-                    runtime.push(p);
+                    runtime->push(p);
                 }
                 break;
                 default:
@@ -89,45 +89,45 @@ void FuncEnv::run(int &limit)
                 if (f != local_var.end())
                 {
                     // 局部变量
-                    runtime.push(local_var[name]);
+                    runtime->push(local_var[name]);
                 }
                 else
                 {
                     auto o = make_shared<Object>(ObjectRawType::TypeSymbol);
                     o->symbol_find(name);
-                    runtime.push(o);
+                    runtime->push(o);
                 }
             }
             break;
             case opcode::VAR_FIND_C:
             {
                 auto name = (*env->const_string)[c.data];
-                auto pre_obj = runtime.top();
-                runtime.pop();
+                auto pre_obj = runtime->top();
+                runtime->pop();
                 if (pre_obj->type != ObjectRawType::TypeSymbol)
                 {
-                    runtime.push(pre_obj->get_child(name));
+                    runtime->push(pre_obj->get_child(name));
                 }
                 else
                 {
                     pre_obj->symbol_find(name);
-                    runtime.push(pre_obj);
+                    runtime->push(pre_obj);
                 }
             }
             break;
             case opcode::VAR_FIND_D:
             {
-                auto topv = runtime.top();
-                runtime.pop();
-                auto pre_obj = runtime.top();
-                runtime.pop();
+                auto topv = runtime->top();
+                runtime->pop();
+                auto pre_obj = runtime->top();
+                runtime->pop();
                 if (topv->type == ObjectRawType::Str)
                 {
-                    runtime.push(pre_obj->get_child(topv->getv<string>()));
+                    runtime->push(pre_obj->get_child(topv->getv<string>()));
                 }
                 else if (topv->type == ObjectRawType::Num)
                 {
-                    runtime.push(pre_obj->get_child(topv->getv<double>()));
+                    runtime->push(pre_obj->get_child(topv->getv<double>()));
                 }
                 else
                 {
@@ -141,11 +141,11 @@ void FuncEnv::run(int &limit)
                 bool async_ = c.op == opcode::FUNC_CALL_LOCAL_RUN;
                 auto name = (*env->const_string)[c.data];
                 auto argcount = int(c.info);
-                stack<shared_ptr<Object>> st;
+                stack<Object::Ptr> st;
                 for (auto i = 0; i < argcount; i++)
                 {
-                    st.push(runtime.top());
-                    runtime.pop();
+                    st.push(runtime->top());
+                    runtime->pop();
                 }
                 vector<Object> args;
                 for (auto i = 0; i < argcount; i++)
@@ -155,7 +155,7 @@ void FuncEnv::run(int &limit)
                 }
                 call_another_func(name, args, async_);
                 if (async_)
-                    runtime.push(Object::make_await(async_index));
+                    runtime->push(Object::make_await(async_index));
                 cur++;
                 return;
             }
@@ -166,13 +166,13 @@ void FuncEnv::run(int &limit)
                 bool async_ = c.op == opcode::FUNC_CALL_BY_NAME_RUN;
                 auto name = (*env->const_string)[c.data];
                 auto argcount = int(c.info);
-                auto lastsymbol = runtime.top();
-                runtime.pop();
-                stack<shared_ptr<Object>> st;
+                auto lastsymbol = runtime->top();
+                runtime->pop();
+                stack<Object::Ptr> st;
                 for (auto i = 0; i < argcount; i++)
                 {
-                    st.push(runtime.top());
-                    runtime.pop();
+                    st.push(runtime->top());
+                    runtime->pop();
                 }
                 vector<Object> args;
                 for (auto i = 0; i < argcount; i++)
@@ -182,15 +182,15 @@ void FuncEnv::run(int &limit)
                 }
                 call_another_func(lastsymbol->copy(), name, args, async_);
                 if (async_)
-                    runtime.push(Object::make_await(async_index));
+                    runtime->push(Object::make_await(async_index));
                 cur++;
                 return;
             }
             break;
             case opcode::RETURN:
             {
-                auto cond = runtime.top();
-                runtime.pop();
+                auto cond = runtime->top();
+                runtime->pop();
                 ret = cond;
                 completed = true;
                 return;
@@ -203,21 +203,21 @@ void FuncEnv::run(int &limit)
             break;
             case opcode::JUMP_NIF:
             {
-                auto cond = runtime.top();
-                runtime.pop();
+                auto cond = runtime->top();
+                runtime->pop();
                 if (!cond->as_bool())
                     cur += c.data;
             }
             break;
             case opcode::MAKE_ARRAY:
             {
-                stack<shared_ptr<Object>> elements_stack;
+                stack<Object::Ptr> elements_stack;
                 for (auto i = 0; i < c.data; i++)
                 {
-                    elements_stack.push(runtime.top());
-                    runtime.pop();
+                    elements_stack.push(runtime->top());
+                    runtime->pop();
                 }
-                runtime.push(Object::make_array_by_stack(elements_stack));
+                runtime->push(Object::make_array_by_stack(elements_stack));
             }
             break;
             case opcode::CALC_OP:
@@ -227,112 +227,112 @@ void FuncEnv::run(int &limit)
                 {
                 case op_type::add_:
                 {
-                    auto b = runtime.top();
-                    runtime.pop();
-                    auto a = runtime.top();
-                    runtime.pop();
+                    auto b = runtime->top();
+                    runtime->pop();
+                    auto a = runtime->top();
+                    runtime->pop();
                     auto c = Object::add(this, a, b);
-                    runtime.push(c);
+                    runtime->push(c);
                 }
                 break;
                 case op_type::sub_:
                 {
-                    auto b = runtime.top();
-                    runtime.pop();
-                    auto a = runtime.top();
-                    runtime.pop();
+                    auto b = runtime->top();
+                    runtime->pop();
+                    auto a = runtime->top();
+                    runtime->pop();
                     auto c = Object::sub(this, a, b);
-                    runtime.push(c);
+                    runtime->push(c);
                 }
                 break;
                 case op_type::mul_:
                 {
-                    auto b = runtime.top();
-                    runtime.pop();
-                    auto a = runtime.top();
-                    runtime.pop();
+                    auto b = runtime->top();
+                    runtime->pop();
+                    auto a = runtime->top();
+                    runtime->pop();
                     auto c = Object::mul(this, a, b);
-                    runtime.push(c);
+                    runtime->push(c);
                 }
                 break;
                 case op_type::div_:
                 {
-                    auto b = runtime.top();
-                    runtime.pop();
-                    auto a = runtime.top();
-                    runtime.pop();
+                    auto b = runtime->top();
+                    runtime->pop();
+                    auto a = runtime->top();
+                    runtime->pop();
                     auto c = Object::div(this, a, b);
-                    runtime.push(c);
+                    runtime->push(c);
                 }
                 break;
                 case op_type::mod_:
                 {
-                    auto b = runtime.top();
-                    runtime.pop();
-                    auto a = runtime.top();
-                    runtime.pop();
+                    auto b = runtime->top();
+                    runtime->pop();
+                    auto a = runtime->top();
+                    runtime->pop();
                     auto c = Object::mod(this, a, b);
-                    runtime.push(c);
+                    runtime->push(c);
                 }
                 break;
                 case op_type::equ_:
                 {
-                    auto b = runtime.top();
-                    runtime.pop();
-                    auto a = runtime.top();
-                    runtime.pop();
+                    auto b = runtime->top();
+                    runtime->pop();
+                    auto a = runtime->top();
+                    runtime->pop();
                     auto c = Object::equ(this, a, b);
-                    runtime.push(c);
+                    runtime->push(c);
                 }
                 break;
                 case op_type::neq_:
                 {
-                    auto b = runtime.top();
-                    runtime.pop();
-                    auto a = runtime.top();
-                    runtime.pop();
+                    auto b = runtime->top();
+                    runtime->pop();
+                    auto a = runtime->top();
+                    runtime->pop();
                     auto c = Object::neq(this, a, b);
-                    runtime.push(c);
+                    runtime->push(c);
                 }
                 break;
                 case op_type::le_:
                 {
-                    auto b = runtime.top();
-                    runtime.pop();
-                    auto a = runtime.top();
-                    runtime.pop();
+                    auto b = runtime->top();
+                    runtime->pop();
+                    auto a = runtime->top();
+                    runtime->pop();
                     auto c = Object::le(this, a, b);
-                    runtime.push(c);
+                    runtime->push(c);
                 }
                 break;
                 case op_type::lt_:
                 {
-                    auto b = runtime.top();
-                    runtime.pop();
-                    auto a = runtime.top();
-                    runtime.pop();
+                    auto b = runtime->top();
+                    runtime->pop();
+                    auto a = runtime->top();
+                    runtime->pop();
                     auto c = Object::lt(this, a, b);
-                    runtime.push(c);
+                    runtime->push(c);
                 }
                 break;
                 case op_type::ge_:
                 {
-                    auto b = runtime.top();
-                    runtime.pop();
-                    auto a = runtime.top();
-                    runtime.pop();
+                    auto b = runtime->top();
+                    runtime->pop();
+                    auto a = runtime->top();
+                    runtime->pop();
                     auto c = Object::ge(this, a, b);
-                    runtime.push(c);
+                    runtime->push(c);
                 }
                 break;
                 case op_type::gt_:
                 {
-                    auto b = runtime.top();
-                    runtime.pop();
-                    auto a = runtime.top();
-                    runtime.pop();
+                    auto b = runtime->top();
+                    runtime->pop();
+                    auto a = runtime->top();
+                    runtime->pop();
                     auto c = Object::gt(this, a, b);
-                    runtime.push(c);
+                    runtime->push(c);
                 }
                 break;
 
@@ -350,22 +350,46 @@ void FuncEnv::run(int &limit)
                     else
                     {
                         // 将函数返回值压入栈
-                        runtime.push(ret);
+                        runtime->push(ret);
                     }
                 }
                 else
                 {
-                    auto await_ = runtime.top();
+                    auto await_ = runtime->top();
                     auto a_id = await_->getv<int>();
                     auto f_await = waitting_async.find(a_id);
                     if (f_await != waitting_async.end())
                     {
-                        runtime.pop();
-                        runtime.push(f_await->second);
+                        runtime->pop();
+                        runtime->push(f_await->second);
                     }
                     else
                     {
                         return;
+                    }
+                }
+            }
+            break;
+            case opcode::STACK_OP:
+            {
+                auto mode = c.info;
+                if (mode == 0)
+                {
+                    // New
+                    runtime = make_shared<stack<Object::Ptr>>();
+                    stacks.push(runtime);
+                }
+                else if (mode == 1)
+                {
+                    // Pop
+                    stacks.pop();
+                    if (!stacks.empty())
+                    {
+                        runtime = stacks.top();
+                    }
+                    else
+                    {
+                        runtime = nullptr;
                     }
                 }
             }
@@ -402,4 +426,6 @@ void FuncEnv::init(shared_ptr<CodeFunc> c, shared_ptr<NodeMessage> m)
     name = code->name;
 
     local_var["this"] = node->self;
+    runtime = make_shared<stack<Object::Ptr>>();
+    stacks.push(runtime);
 }

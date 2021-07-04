@@ -153,6 +153,7 @@ public:
 
                 auto func_name_index = read<int>();
                 auto is_static = read<byte>();
+                funcptr->is_static = is_static;
                 auto args_count = read<byte>();
                 funcptr->name = (*mod->const_string)[func_name_index];
                 cout << (*mod->const_string)[func_name_index] << endl;
@@ -232,6 +233,9 @@ public:
                         break;
                     case opcode::VAR_FIND_D:
                         cout << "VAR_FIND_D\t\t" << 0 << "\t " << cmd << endl;
+                        break;
+                    case opcode::STACK_OP:
+                        cout << "STACK_OP\t\t" << info << "\t " << cmd << endl;
                         break;
                     default:
                         cout << "??\t\t\t"

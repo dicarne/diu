@@ -24,6 +24,7 @@ public:
     shared_ptr<CodeCodePage> mod;
     vector<arg> args;
     string name;
+    bool is_static = false;
     CodeFunc(/* args */) {}
     ~CodeFunc() {}
 };

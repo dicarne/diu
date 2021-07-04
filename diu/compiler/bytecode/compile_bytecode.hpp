@@ -114,6 +114,7 @@ private:
     stringstream run_statements(std::vector<ast_statement> &statements)
     {
         stringstream stream;
+        write_op(stream, opcode::STACK_OP, 0, 0);
         for (auto ss = statements.begin(); ss != statements.end(); ss++)
         {
             if (ss->statemen_type == ast_statement::type::assign)
@@ -241,6 +242,7 @@ private:
 
             //cout << "------------" << endl;
         }
+        write_op(stream, opcode::STACK_OP, 1, 0);
         return stream;
     }
 

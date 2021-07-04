@@ -6,12 +6,12 @@
 #include <variant>
 using std::stack;
 using std::variant;
-enum ObjectRawType: unsigned char
+enum ObjectRawType : unsigned char
 {
     Null = 0, // !
-    Pid,  // !
-    Int,  // !
-    Num,  // !
+    Pid,      // !
+    Int,      // !
+    Num,      // !
     Bool,
     Map,
     Array,
@@ -31,6 +31,7 @@ private:
     static string encode_string(string str);
 
 public:
+    typedef shared_ptr<Object> Ptr;
     var value;
     ObjectRawType type;
 
@@ -51,7 +52,7 @@ public:
         }
         else if (type == ObjectRawType::Array)
         {
-            value = make_shared<vector<shared_ptr<Object>>>();
+            value = make_shared<vector<Object::Ptr>>();
         }
     }
     Object(double d)
@@ -89,7 +90,7 @@ public:
         this->type = type;
         this->value = value;
     }
-    void set(shared_ptr<Object> obj)
+    void set(Object::Ptr obj)
     {
         this->type = obj->type;
         this->value = obj->value;
@@ -99,7 +100,7 @@ public:
         value = ano.value;
         type = ano.type;
     }
-    static shared_ptr<Object> make_await(int async_index)
+    static Object::Ptr make_await(int async_index)
     {
         auto o = make_shared<Object>(ObjectRawType::Await);
         o->value = async_index;
@@ -112,8 +113,8 @@ public:
         return o;
     }
 
-    shared_ptr<Object> copy();
-    shared_ptr<Object> clone();
+    Object::Ptr copy();
+    Object::Ptr clone();
 
     bool as_bool()
     {
@@ -134,12 +135,12 @@ public:
         return true;
     }
 
-    static shared_ptr<Object> make_array_by_stack(stack<shared_ptr<Object>> &s);
+    static Object::Ptr make_array_by_stack(stack<Object::Ptr> &s);
 
-    void set_child(string name, shared_ptr<Object> value);
+    void set_child(string name, Object::Ptr value);
 
-    shared_ptr<Object> get_child(string name);
-    shared_ptr<Object> get_child(double name);
+    Object::Ptr get_child(string name);
+    Object::Ptr get_child(double name);
 
     string to_string();
 
@@ -202,7 +203,7 @@ public:
         return false;
     }
 
-    static shared_ptr<Object> add(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    static Object::Ptr add(FuncEnv *ctx, Object::Ptr a, Object::Ptr b)
     {
         double na, nb;
         if (a->try_convert_to(na) && b->try_convert_to(nb))
@@ -217,7 +218,7 @@ public:
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
-    static shared_ptr<Object> sub(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    static Object::Ptr sub(FuncEnv *ctx, Object::Ptr a, Object::Ptr b)
     {
         double na, nb;
         if (a->try_convert_to(na) && b->try_convert_to(nb))
@@ -227,7 +228,7 @@ public:
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
-    static shared_ptr<Object> mul(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    static Object::Ptr mul(FuncEnv *ctx, Object::Ptr a, Object::Ptr b)
     {
         double na, nb;
         if (a->try_convert_to(na) && b->try_convert_to(nb))
@@ -237,7 +238,7 @@ public:
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
-    static shared_ptr<Object> div(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    static Object::Ptr div(FuncEnv *ctx, Object::Ptr a, Object::Ptr b)
     {
         double na, nb;
         if (a->try_convert_to(na) && b->try_convert_to(nb))
@@ -247,7 +248,7 @@ public:
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
-    static shared_ptr<Object> mod(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    static Object::Ptr mod(FuncEnv *ctx, Object::Ptr a, Object::Ptr b)
     {
         double na, nb;
         if (a->try_convert_to(na) && b->try_convert_to(nb))
@@ -257,7 +258,7 @@ public:
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
-    static shared_ptr<Object> equ(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    static Object::Ptr equ(FuncEnv *ctx, Object::Ptr a, Object::Ptr b)
     {
         double na, nb;
         if (a->try_convert_to(na) && b->try_convert_to(nb))
@@ -272,7 +273,7 @@ public:
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
-    static shared_ptr<Object> neq(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    static Object::Ptr neq(FuncEnv *ctx, Object::Ptr a, Object::Ptr b)
     {
         double na, nb;
         if (a->try_convert_to(na) && b->try_convert_to(nb))
@@ -287,7 +288,7 @@ public:
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
-    static shared_ptr<Object> le(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    static Object::Ptr le(FuncEnv *ctx, Object::Ptr a, Object::Ptr b)
     {
         double na, nb;
         if (a->try_convert_to(na) && b->try_convert_to(nb))
@@ -302,7 +303,7 @@ public:
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
-    static shared_ptr<Object> lt(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    static Object::Ptr lt(FuncEnv *ctx, Object::Ptr a, Object::Ptr b)
     {
         double na, nb;
         if (a->try_convert_to(na) && b->try_convert_to(nb))
@@ -317,7 +318,7 @@ public:
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
-    static shared_ptr<Object> ge(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    static Object::Ptr ge(FuncEnv *ctx, Object::Ptr a, Object::Ptr b)
     {
         double na, nb;
         if (a->try_convert_to(na) && b->try_convert_to(nb))
@@ -332,7 +333,7 @@ public:
         throw runtime_error("NOT SUPPORT DIFFERENT VALUE TYPE OP YET!");
         return make_shared<Object>(0);
     }
-    static shared_ptr<Object> gt(FuncEnv *ctx, shared_ptr<Object> a, shared_ptr<Object> b)
+    static Object::Ptr gt(FuncEnv *ctx, Object::Ptr a, Object::Ptr b)
     {
         double na, nb;
         if (a->try_convert_to(na) && b->try_convert_to(nb))

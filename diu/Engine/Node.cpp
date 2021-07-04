@@ -170,13 +170,31 @@ shared_ptr<FuncEnv> Node::create_func(shared_ptr<NodeMessage> p)
     fr->init(fc->second, p);
     return fr;
 }
+shared_ptr<FuncEnv> Node::create_func(shared_ptr<CodeNode> cp, shared_ptr<NodeMessage> p)
+{
+    func_index++;
+
+    auto fc = cp->funcs.find(p->name);
+    if (fc == cp->funcs.end())
+    {
+        throw runtime_error("Can not find func: " + p->name + " in " + cp->name);
+    }
+    auto fr = make_shared<FuncEnv>();
+    fr->id = func_index;
+    fr->node = this;
+    fr->callback_id = p->id;
+    fr->callback_node = p->callbackNode;
+    fr->async_call = p->async_;
+    fr->init(fc->second, p);
+    return fr;
+}
 
 void Node::run_func(shared_ptr<FuncEnv> fr)
 {
     run_env.push_back(fr);
 }
 
-void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_ptr<NodeMessage> msg)
+void Node::call_another_func(FuncEnv *caller, Object::Ptr symbol, shared_ptr<NodeMessage> msg)
 {
     if (symbol->type == ObjectRawType::TypeSymbol)
     {
@@ -233,6 +251,7 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_
             {
                 if (!msg->async_)
                     waitting_callback[msg->id] = caller;
+
                 engine->Run(mod->module_name, (*chain)[0], msg->name, msg);
                 return;
             }
@@ -262,7 +281,17 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_
             auto fmod = modules.find(pkg);
             if (fmod != modules.end())
             {
-                engine->Run(pkg, (*chain)[1], msg->name, msg);
+                auto try_find_node = fmod->second->node_to_code_page.find((*chain)[1]);
+                if (try_find_node != fmod->second->node_to_code_page.end() &&
+                    try_find_node->second->mod->engine_version == engine->get_version() &&
+                    try_find_node->second->funcs[msg->name]->is_static)
+                {
+                    run_func(create_func(try_find_node->second, msg));
+                }
+                else
+                {
+                    engine->Run(pkg, (*chain)[1], msg->name, msg);
+                }
                 return;
             }
             else

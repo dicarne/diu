@@ -29,6 +29,7 @@ private:
     shared_ptr<CodeNode> code_page;
     int this_cycle_cmd_count = 0;
     shared_ptr<FuncEnv> create_func(shared_ptr<NodeMessage> p);
+    shared_ptr<FuncEnv> create_func(shared_ptr<CodeNode> code_page, shared_ptr<NodeMessage> p);
     void run_func(shared_ptr<FuncEnv> p);
     list<shared_ptr<FuncEnv>> run_env;
     const int limit = 200;
@@ -39,7 +40,7 @@ public:
     PID Pid;
     bool active = true;
     Engine *engine;
-    shared_ptr<Object> self;
+    Object::Ptr self;
     Node();
     ~Node();
 
@@ -60,7 +61,7 @@ public:
     // Local
     void call_another_func(FuncEnv *caller, shared_ptr<NodeMessage> msg);
     // Remote
-    void call_another_func(FuncEnv *caller, shared_ptr<Object> symbol, shared_ptr<NodeMessage> msg);
+    void call_another_func(FuncEnv *caller, Object::Ptr symbol, shared_ptr<NodeMessage> msg);
 };
 
 #endif

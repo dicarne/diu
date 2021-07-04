@@ -1,7 +1,7 @@
 module debug
 
 node assert{
-    fn equ(id: num, a: any, b: any) {
+    static fn equ(id: num, a: any, b: any) {
         if(a != b) {
             sys:print("error: " + id)
         }else {
