@@ -5,22 +5,22 @@ node Main {             // 声明一个节点
     fn new() {
     }
     fn main() {         // 声明一个函数
-        test2()
+        test3()
         sys:exit() 
     }
-    //fn test1() {
-    //    let a = {}
-    //    a["b"]["c"] = 1
-    //    assert:equ(1, a["b"]["c"], 1)
-    //
-    //    a = 2
-    //    assert:equ(2, a, 2)
-    //
-    //    assert:equ(3, this.newv, 100)
-//
-    //    let c = run add(2, 3)
-    //    sys:print(await c)
-    //}
+    fn test1() {
+        let a = {}
+        a["b"]["c"] = 1
+        assert:equ(1, a["b"]["c"], 1)
+
+        a = 2
+        assert:equ(2, a, 2)
+
+        assert:equ(3, this.newv, 100)
+
+        let c = run add(2, 3)
+        sys:print(await c)
+    }
     fn test2() {
         let a = 3
         while(a > 0) {
@@ -31,16 +31,30 @@ node Main {             // 声明一个节点
             a = a - 1
         }
     }
-    //fn add(a: num, b: num) {
-    //    return a + b
-    //}
-    // fn cy(a: num) {
-    //     a = a-1
-    //     sys:print(a)
-    //     let n = n1:new()
-    //     n:echo()
-    //     if(a>0){
-    //         run cy(a)
-    //     }
-    // }
+    fn test3() {
+        let a = Data1:new()
+        let b = Fn:new()
+        b:call(a)
+    }
+
+}
+
+node Data1 {
+    fn new() {
+        this.hello = "HELLO"
+    }
+    fn set(newv: str) {
+        this.hello = newv
+    }
+    fn get() {
+        return this.hello
+    }
+}
+
+node Fn {
+    fn call(node1: Data1) {
+        sys:print(node1:get())
+        node1:set("WORLD")
+        sys:print(node1:get())
+    }
 }
