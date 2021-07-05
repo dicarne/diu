@@ -28,7 +28,7 @@ private:
     bool handle_message;
     shared_ptr<CodeNode> code_page;
     int this_cycle_cmd_count = 0;
-    shared_ptr<FuncEnv> create_func(shared_ptr<NodeMessage> p);
+    //shared_ptr<FuncEnv> create_func(shared_ptr<NodeMessage> p);
     shared_ptr<FuncEnv> create_func(shared_ptr<CodeNode> code_page, shared_ptr<NodeMessage> p);
     void run_func(shared_ptr<FuncEnv> p);
     list<shared_ptr<FuncEnv>> run_env;

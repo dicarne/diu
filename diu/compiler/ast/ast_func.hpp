@@ -36,7 +36,7 @@ private:
 public:
     string name;
     vector<ast_func_arg> args;
-    bool is_static;
+    bool is_static = false;
     vector<ast_statement> statements;
     ast_func(/* args */);
     ~ast_func();

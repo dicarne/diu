@@ -8,7 +8,9 @@ int main(int, char **)
 {
     vector<string> files;
     files.push_back("test.diu");
-    files.push_back("test2.diu");
+    files.push_back("diulib/debug/assert.diu");
+    files.push_back("diulib/test/test1.diu");
+    
     compiler::compile("test.diuc", files);
  
     Engine e = Engine();

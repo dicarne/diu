@@ -49,9 +49,9 @@ void Node::run_once()
             if (sp->name == "new")
             {
                 auto fc = code_page->funcs.find(p->name);
-                if (fc != code_page->funcs.end())
+                if (fc != code_page->funcs.end() && fc->second != nullptr)
                 {
-                    auto newfun = create_func(sp);
+                    auto newfun = create_func(code_page, sp);
                     run_env.push_back(newfun);
                 }
                 else
@@ -63,7 +63,7 @@ void Node::run_once()
             }
             else
             {
-                auto f = create_func(sp);
+                auto f = create_func(code_page, sp);
                 run_func(f);
             }
         }
@@ -152,24 +152,7 @@ void Node::run_once()
         active = false;
     }
 }
-shared_ptr<FuncEnv> Node::create_func(shared_ptr<NodeMessage> p)
-{
-    func_index++;
 
-    auto fc = code_page->funcs.find(p->name);
-    if (fc == code_page->funcs.end())
-    {
-        throw runtime_error("Can not find func: " + p->name + " in " + code_page->name);
-    }
-    auto fr = make_shared<FuncEnv>();
-    fr->id = func_index;
-    fr->node = this;
-    fr->callback_id = p->id;
-    fr->callback_node = p->callbackNode;
-    fr->async_call = p->async_;
-    fr->init(fc->second, p);
-    return fr;
-}
 shared_ptr<FuncEnv> Node::create_func(shared_ptr<CodeNode> cp, shared_ptr<NodeMessage> p)
 {
     func_index++;
@@ -284,12 +267,14 @@ void Node::call_another_func(FuncEnv *caller, Object::Ptr symbol, shared_ptr<Nod
                 auto try_find_node = fmod->second->node_to_code_page.find((*chain)[1]);
                 if (try_find_node != fmod->second->node_to_code_page.end() &&
                     try_find_node->second->mod->engine_version == engine->get_version() &&
-                    try_find_node->second->funcs[msg->name]->is_static)
+                    try_find_node->second->funcs[msg->name] && try_find_node->second->funcs[msg->name]->is_static)
                 {
                     run_func(create_func(try_find_node->second, msg));
                 }
                 else
                 {
+                    if (msg->name != "new")
+                        throw runtime_error("Can't run dynamic function without an instance: " + pkg);
                     engine->Run(pkg, (*chain)[1], msg->name, msg);
                 }
                 return;
@@ -322,7 +307,7 @@ void Node::call_another_func(FuncEnv *caller, shared_ptr<NodeMessage> msg)
     //     call_another_func(caller, )
     // }
     // Local Call
-    auto f = create_func(msg);
+    auto f = create_func(caller->code->node, msg);
     if (!msg->async_)
         waitting_callback[msg->id] = caller;
     else

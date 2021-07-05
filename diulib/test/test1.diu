@@ -1,0 +1,53 @@
+module __test__
+from debug use {assert}
+
+node test1 {
+    fn runall() {
+        test1()
+        test2()
+        test3()
+    }
+    fn test1() {
+        let a = {}
+        a["b"]["c"] = 1
+        assert:equ(1, a["b"]["c"], 1)
+
+        a = 2
+        assert:equ(2, a, 2)
+    }
+    fn test2() {
+        let a = 3
+        while(a > 0) {
+            if (a == 1) {
+                break
+            }
+            a = a - 1
+        }
+        assert:equ("while break", a, 1)
+    }
+    fn test3() {
+        let a = Data1:new()
+        let b = Fn:new()
+        b:call(a)
+    }
+}
+
+node Data1 {
+    fn new() {
+        this.hello = "HELLO"
+    }
+    fn set(newv: str) {
+        this.hello = newv
+    }
+    fn get() {
+        return this.hello
+    }
+}
+
+node Fn {
+    fn call(node1: Data1) {
+        assert:equ("f1" ,"HELLO", node1:get())
+        node1:set("WORLD")
+        assert:equ("f2" ,"WORLD", node1:get())
+    }
+}

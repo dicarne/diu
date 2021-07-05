@@ -15,7 +15,7 @@ void FuncEnv::call_another_func(Object::Ptr symbol, string name, vector<Object> 
         waitting = true;
     else
         async_index++;
-    auto m = make_shared<NodeMessage>(NodeMessageType::Call, name, id, PID(), async_ ? async_index : 0);
+    auto m = make_shared<NodeMessage>(NodeMessageType::Call, name, id, this->node->Pid, async_ ? async_index : 0);
     m->args = args;
 
     node->call_another_func(this, symbol, m);
@@ -410,6 +410,7 @@ void FuncEnv::run(int &limit)
     {
         failed = true;
         completed = true;
+        ret = make_shared<Object>(-1.0);
         std::cout << "[ERROR] " << env->module_name << "." << code->node->name << ":" << code->name << " - " << e.what() << endl;
         return;
     }
@@ -423,6 +424,10 @@ void FuncEnv::init(shared_ptr<CodeFunc> c, shared_ptr<NodeMessage> m)
 
     auto env = code->mod;
     int index = 0;
+    if (m->args.size() != c->args.size())
+    {
+        throw runtime_error("arg size not match.");
+    }
     for (auto &a : code->args)
     {
         local_var[(*env->const_string)[a.arg_name]] = make_shared<Object>(m->args[index]);

@@ -1,60 +1,14 @@
 module my
 from debug use {assert}
+from __test__ use {test1}
 
 node Main {             // 声明一个节点
     fn new() {
     }
     fn main() {         // 声明一个函数
-        test3()
+        let t = test1:new()
+        t:runall()
         sys:exit() 
     }
-    fn test1() {
-        let a = {}
-        a["b"]["c"] = 1
-        assert:equ(1, a["b"]["c"], 1)
-
-        a = 2
-        assert:equ(2, a, 2)
-
-        assert:equ(3, this.newv, 100)
-
-        let c = run add(2, 3)
-        sys:print(await c)
-    }
-    fn test2() {
-        let a = 3
-        while(a > 0) {
-            sys:print(a)
-            if (a == 1) {
-                break
-            }
-            a = a - 1
-        }
-    }
-    fn test3() {
-        let a = Data1:new()
-        let b = Fn:new()
-        b:call(a)
-    }
-
 }
 
-node Data1 {
-    fn new() {
-        this.hello = "HELLO"
-    }
-    fn set(newv: str) {
-        this.hello = newv
-    }
-    fn get() {
-        return this.hello
-    }
-}
-
-node Fn {
-    fn call(node1: Data1) {
-        sys:print(node1:get())
-        node1:set("WORLD")
-        sys:print(node1:get())
-    }
-}

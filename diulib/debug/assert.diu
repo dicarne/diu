@@ -1,0 +1,11 @@
+module debug
+
+node assert{
+    static fn equ(tips: num, a: any, b: any) {
+        if(a != b) {
+            sys:print("error: " + tips)
+        }else {
+            sys:print("success: " + tips)
+        }
+    }
+}
