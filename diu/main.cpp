@@ -7,15 +7,15 @@
 int main(int, char **)
 {
     vector<string> files;
-    files.push_back("test.diu");
+    files.push_back("diulib/test/testmain.diu");
     files.push_back("diulib/debug/assert.diu");
     files.push_back("diulib/test/test1.diu");
     
-    compiler::compile("test.diuc", files);
+    compiler::compile("diulib/test/test.diuc", files);
  
     Engine e = Engine();
-    e.Config("config.json");
-    e.Load("test.diuc");
+    e.Config("diulib/test/config.json");
+    e.Load("diulib/test/test.diuc");
     e.RunCode();
     return 0;
 }
