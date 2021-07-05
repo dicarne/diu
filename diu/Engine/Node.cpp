@@ -115,7 +115,7 @@ void Node::run_once()
             }
             else
             {
-                nodemsg->args.push_back(*(cur_func->ret->copy()));
+                nodemsg->args.push_back(*(cur_func->ret->clone()));
             }
 
             if (nodemsg->callbackNode.pid == 0)
