@@ -1,22 +1,20 @@
 #ifndef AST_EXPR_H_
 #define AST_EXPR_H_
-#include <string>
-#include <vector>
 #include "../token.hpp"
 #include <memory>
+#include <string>
+#include <vector>
 using std::shared_ptr;
 using std::string;
 using std::vector;
 
-class ast_expr
-{
-private:
+class ast_expr {
+  private:
     /* data */
-public:
-    ast_expr(/* args */);
-    ~ast_expr();
-    enum class type
-    {
+  public:
+    ast_expr(/* args */) {}
+    ~ast_expr() {}
+    enum class type {
         expressions,
         instance_num,
         instance_string,
@@ -44,13 +42,5 @@ public:
     type expr_type;
     bool start_with_dot = false; // 处理a.b[c].d
 };
-
-ast_expr::ast_expr(/* args */)
-{
-}
-
-ast_expr::~ast_expr()
-{
-}
 
 #endif

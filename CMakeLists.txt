@@ -9,7 +9,7 @@ include_directories("${PROJECT_BINARY_DIR}")
 configure_file("${PROJECT_SOURCE_DIR}/diu/confc.h.in" "${PROJECT_SOURCE_DIR}/diu/confc.h" @ONLY)
 
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -pthread")
 
 include(CTest)
@@ -19,7 +19,7 @@ enable_testing()
 #find_package(Libevent CONFIG REQUIRED)
 
 
-add_executable(diu launcher/main.cpp)
+#add_executable(diu launcher/main.cpp)
 
 file(GLOB headers diu/*.h diu/Engine/*.cpp diu/compiler/*.cpp diu/Engine/Object/*.cpp diu/*.hpp )
 add_executable(diuexec diu/main.cpp ${headers})

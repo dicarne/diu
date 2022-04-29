@@ -307,8 +307,9 @@ void lexer::process_char_buff(const std::deque<char> &raw_buff, std::deque<token
         // end file
         if (!compiler_type::isempty(*it))
         {
+            auto i = *it;
             if (show_debug)
-                DEBUG_ERROR(*it);
+                DEBUG_ERROR((char)i);
         }
         it++;
     }
