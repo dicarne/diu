@@ -22,13 +22,10 @@ class user_type {
     int size = 0;
     std::string name = "undefined type";
 
-    std::shared_ptr<user_type::type_member> try_find_member(std::string name) {
+    std::shared_ptr<user_type::type_member> find_member(std::string name) {
         auto f_m = member_map.find(name);
         if (f_m == member_map.end()) {
-            if (parent != nullptr) {
-                return parent->try_find_member(name);
-            } else
-                return nullptr;
+            return nullptr;
         }
         return f_m->second;
     }
